@@ -207,3 +207,168 @@ class Solution:
             slow, head = slow.next, head.next
         return True
 ```
+
+### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+给你一个链表的头节点 `head` ，判断链表中是否有环。
+
+如果链表中有某个节点，可以通过连续跟踪 `next` 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 `pos` 来表示链表尾连接到链表中的位置（索引从 0 开始）。**注意：`pos` 不作为参数进行传递** 。仅仅是为了标识链表的实际情况。
+
+_如果链表中存在环_ ，则返回 `true` 。 否则，返回 `false` 。
+
+示例：
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/07/circularlinkedlist.png)
+
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：true
+解释：链表中有一个环，其尾部连接到第二个节点。
+```
+
+#### 核心思路
+```
+采用快慢指针的方式，设置slow和fast指针：
+
+初始化：slow=fast=head
+循环：当slow，fast和fast.next均不为None时，令slow=slow.next,fast=fast.next.next，若slow=fast，则存在环形链表；若slow和fast中存在None，则不存在环形链表。
+```
+
+#### 代码
+```python
+class Solution:
+    def hasCycle(self, head: Optional[ListNode]) -> bool:
+        if not head:
+            return False
+        slow, fast=head, head
+        while slow and fast and fast.next:
+            slow, fast=slow.next, fast.next.next
+            if slow==fast:
+                return True    
+        return False
+```
+
+### [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+将两个升序链表合并为一个新的 **升序** 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/10/03/merge_ex1.jpg)
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+#### 核心思路
+```
+1. 创建哑节点：使用dummy作为合并后链表的头节点的前驱，简化头部处理。
+2. 初始化当前指针：用current指向当前合并链表的最后一个节点。
+3. 迭代合并：比较list1和list2的值，选择较小的节点接入合并链表，并移动相应的指针。
+4. 处理剩余部分：将未遍历完的链表直接接入合并链表的末尾。
+5. 返回结果：返回dummy.next，即合并后的链表头节点。
+```
+
+#### 代码
+```python
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        # 创建一个哑节点作为合并后链表的头节点的前驱节点
+        dummy = ListNode(-1)
+        current = dummy
+        
+        # 当两个链表都不为空时，进行迭代合并
+        while list1 and list2:
+            if list1.val <= list2.val:
+                # 如果list1的值较小或相等，将其节点接入合并链表
+                current.next = list1
+                list1 = list1.next
+            else:
+                # 如果list2的值较小，将其节点接入合并链表
+                current.next = list2
+                list2 = list2.next
+            # 移动当前指针到合并链表的最后一个节点
+            current = current.next
+        
+        # 将未遍历完的链表直接接入合并链表的末尾
+        current.next = list1 if list1 else list2
+        
+        # 返回合并后的链表头节点
+        return dummy.next
+```
+
+### [94. 二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+
+给定一个二叉树的根节点 `root` ，返回 _它的 **中序** 遍历_ 。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/09/15/inorder_1.jpg)
+
+```
+输入：root = [1,null,2,3]
+输出：[1,3,2]
+```
+#### 核心思路
+【方法一：递归】
+```
+中序遍历的顺序是先遍历左子树，然后访问根节点，最后遍历右子树。
+
+1. 主方法：
+   - 初始化一个空列表 result 用于存储遍历结果。
+   - 调用递归辅助方法 inorder，传入根节点和结果列表。
+   - 返回结果列表。
+
+2. 递归辅助方法 inorder：
+   - 检查当前节点是否为空，如果为空则返回。
+   - 递归遍历当前节点的左子树。
+   - 将当前节点的值添加到结果列表中。
+   - 递归遍历当前节点的右子树。
+   - 返回结果列表。
+```
+【方法二：栈】
+```
+1. 初始化一个栈和一个结果列表。
+2. 使用一个循环，只要当前节点或栈不为空，就继续遍历。
+3. 在循环中，将当前节点的所有左子节点压入栈中，直到没有左子节点为止。
+4. 弹出栈顶节点，访问该节点并将它的值加入结果列表。
+5. 将当前节点更新为刚访问节点的右子节点，继续遍历右子树。
+```
+
+#### 代码
+【方法一：递归】
+```python
+class Solution:
+    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        result = []  # 初始化一个空列表来存储遍历结果
+        self.inorder(root, result)  # 调用辅助递归函数进行中序遍历
+        return result  # 返回遍历结果列表
+    
+    def inorder(self, root, result):
+        if not root:  # 如果当前节点为空，直接返回
+            return
+        self.inorder(root.left, result)  # 递归遍历左子树
+        result.append(root.val)  # 将当前节点的值加入结果列表
+        self.inorder(root.right, result)  # 递归遍历右子树
+        return result  # 返回结果列表（虽然这个返回值在主方法中没有用到）
+```
+【方法二：栈】
+```python
+class Solution:
+    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        stack, result = [], []  # 初始化栈和结果列表
+        
+        while root or stack:  # 当根节点不为空或栈不为空时循环
+            while root:  # 遍历到当前子树的最左节点
+                stack.append(root)  # 将当前节点入栈
+                root = root.left  # 移动到左子节点
+            
+            root = stack.pop()  # 弹出栈顶节点（最左节点）
+            result.append(root.val)  # 将弹出节点的值加入结果列表
+            root = root.right  # 移动到右子节点
+        
+        return result  # 返回结果列表
+```
