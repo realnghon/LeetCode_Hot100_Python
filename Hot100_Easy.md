@@ -372,3 +372,268 @@ class Solution:
         
         return result  # 返回结果列表
 ```
+
+### [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给定一个二叉树 `root` ，返回其最大深度。
+二叉树的 **最大深度** 是指从根节点到最远叶子节点的最长路径上的节点数。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/11/26/tmp-tree.jpg)
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：3
+```
+
+#### 核心思路
+```
+【方法一：递归】
+终止条件：如果当前节点（root）为空，说明我们已经到达了树的末端，这时候返回高度为0。
+递归拆解：对每个节点，二叉树的最大深度等于其左子树和右子树中较大的那个深度再加上1。
+
+【方法二：层序遍历】
+初始检查：如果根节点为空，则直接返回深度0。
+初始化：使用一个队列来进行广度优先搜索（BFS），将根节点放入队列，并初始化最大深度为1。
+BFS遍历：
+  - 每次从队列中取出当前层的所有节点，检查它们的左子节点和右子节点，如果存在则加入队列。
+  - 每处理完一层后，增加最大深度计数器。
+结束条件：当队列为空时，表示已遍历完所有节点，返回最大深度。
+```
+#### 代码
+【方法一：递归】
+```python
+class Solution:
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0
+        return max(self.maxDepth(root.left)+1,self.maxDepth(root.right)+1)
+```
+
+【方法二：广度优先搜索】
+```python
+class Solution:
+    # 使用广度优先搜索 (BFS) 计算最大深度
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        if not root:
+            return 0  # 空树的深度为0
+        
+        maxDepth = 1  # 初始最大深度为1（至少有根节点）
+        queue = deque()  # 创建一个队列来进行BFS遍历
+        queue.append(root)  # 将根节点添加到队列中
+        
+        while len(queue):  # 当队列不为空时，继续遍历
+            length = len(queue)  # 获取当前层的节点数量
+            for i in range(length):
+                head = queue.popleft()  # 弹出当前层的第一个节点
+                if head.left is not None:  # 如果左子节点存在，加入队列
+                    queue.append(head.left)
+                if head.right is not None:  # 如果右子节点存在，加入队列
+                    queue.append(head.right)
+            if len(queue) == 0:  # 如果队列为空，说明已遍历完所有节点
+                break
+            maxDepth += 1  # 每处理完一层，最大深度加1
+        
+        return maxDepth  # 返回最终的最大深度
+```
+
+### [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给你一棵二叉树的根节点 `root` ，翻转这棵二叉树，并返回其根节点。
+
+示例：
+![](https://assets.leetcode.com/uploads/2021/03/14/invert1-tree.jpg)
+
+```
+输入：root = [4,2,7,1,3,6,9]
+输出：[4,7,2,9,6,3,1]
+```
+
+#### 核心思路
+```
+【方法一：DFS（递归）】
+- 检查根节点是否为空：如果根节点为空，则直接返回，因为空树不需要翻转。
+- 递归翻转左右子树：递归调用翻转函数，先翻转左子树，再翻转右子树。确保每棵子树都被正确翻转。
+- 交换左右子节点：在递归处理完左右子树之后，将当前节点的左子节点和右子节点进行交换。
+- 返回翻转后的根节点：最后返回翻转后的根节点，以保证整棵树从上到下都是翻转后的结构。
+
+【方法二：BFS（队列）】
+
+构造队列queue，对于root根节点，若root为空，则直接返回root；若root不为空，则将其入队。
+
+在队列不为空时，开始循环弹出队列队首元素。head=queue.pop(）。然后交换head
+的左右节点，若head的左右节点不为空，则将其入队。
+
+最后，返回root。
+```
+
+#### 代码
+【方法一：DFS（递归）】
+```python
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        def exchange(root):
+            if not root:
+                return 
+            root.left,root.right=root.right,root.left
+            exchange(root.left)
+            exchange(root.right)
+        exchange(root)
+        return root
+```
+【方法二：BFS（队列）】
+```python
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return root        
+        # 初始化队列并将根节点入队
+        queue = deque([root])
+        # 当队列不为空时，进行广度优先遍历
+        while queue:
+            # 弹出队首元素
+            head = queue.popleft()
+            # 交换左右子节点
+            head.left, head.right = head.right, head.left
+            # 将非空的左右子节点分别入队
+            if head.left:
+                queue.append(head.left)
+            if head.right:
+                queue.append(head.right)
+        # 返回反转后的树的根节点
+        return root
+```
+
+### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给你一棵二叉树的根节点，返回该树的 **直径** 。
+二叉树的 **直径** 是指树中任意两个节点之间最长路径的 **长度** 。这条路径可能经过也可能不经过根节点 `root` 。
+两节点之间路径的 **长度** 由它们之间边数表示。
+
+示例：
+![](https://assets.leetcode.com/uploads/2021/03/06/diamtree.jpg)
+
+```
+输入：root = [1,2,3,4,5]
+输出：3
+解释：3 ，取路径 [4,2,1,3] 或 [5,2,1,3] 的长度。
+```
+
+#### 核心思路
+```
+1. 在每个节点计算通过该节点的左子树深度和右子树深度。
+2. 计算通过该节点的路径长度（左子树深度 + 右子树深度）。
+3. 更新全局最大直径。
+4. 返回当前节点的深度（即 max(左子树深度, 右子树深度) + 1）。
+```
+
+#### 代码
+```python
+class Solution:
+    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
+        maxDiameter = 0
+        
+        def depth(node: TreeNode) -> int:
+            nonlocal maxDiameter
+            if not node:
+                return 0
+            leftDepth = depth(node.left)
+            rightDepth = depth(node.right)
+            # 更新最大直径
+            maxDiameter = max(maxDiameter, leftDepth + rightDepth)
+            
+            # 返回该节点的深度
+            return max(leftDepth, rightDepth) + 1
+        depth(root)
+        return maxDiameter
+```
+
+### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给你一个整数数组 `nums` ，其中元素已经按 **升序** 排列，请你将其转换为一棵 平衡 二叉搜索树。
+
+> 平衡二叉树是一种特殊的二叉搜索树，其中任意节点的左右子树高度差不超过1。它可以保证在最坏情况下的查找、插入和删除操作的时间复杂度都是 $O(\log n)$ 级别。
+> 平衡二叉树常用的实现方式有红黑树、AVL树、Treap等。
+
+示例：
+![](https://assets.leetcode.com/uploads/2021/02/18/btree1.jpg)
+```
+输入：nums = [-10,-3,0,5,9]
+输出：[0,-3,9,-10,null,5]
+解释：[0,-10,5,null,-3,null,9] 也将被视为正确答案
+```
+#### 核心思路
+```
+1. 选择中间元素作为根节点：升序数组的中间元素自然地成为根节点，因为它可以将数组分成两部分，左边部分的所有元素都小于它，右边部分的所有元素都大于它。
+2. 递归构建左右子树：
+  - 对于根节点的左子树，从数组的开始位置到中间位置-1的部分，递归执行相同的过程。
+  - 对于根节点的右子树，从中间位置+1到数组的结束位置的部分，递归执行相同的过程。
+3. 停止条件：当子数组为空时，返回None。
+```
+
+#### 代码
+```python
+class Solution:
+    def sortedArrayToBST(self, nums: List[int]) -> Optional[TreeNode]:
+        # 辅助函数，将子数组转换为BST
+        def helper(left: int, right: int) -> Optional[TreeNode]:
+            if left > right:
+                return None
+            # 选择中间元素作为根节点
+            mid = (left + right) // 2
+            root = TreeNode(nums[mid])
+            # 递归构建左子树和右子树
+            root.left = helper(left, mid - 1)
+            root.right = helper(mid + 1, right)
+            return root        
+        return helper(0, len(nums) - 1)
+```
+
+
+### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
+请必须使用时间复杂度为 `O(log n)` 的算法。
+
+示例：
+
+```
+输入：nums = [1,3,5,6], target = 5
+输出：2
+
+输入：nums = [1,3,5,6], target = 7
+输出：4
+```
+
+#### 核心思路
+```
+1. 初始化：设置两个指针 left 和 right 分别指向数组的起始和结束位置。
+2. 二分查找：
+    - 计算中间索引 mid = left + (right - left) // 2。
+    - 如果 nums[mid] 等于目标值 target，返回 mid。
+    - 如果 nums[mid] 大于目标值，更新 right 为 mid - 1。
+    - 如果 nums[mid] 小于目标值，更新 left 为 mid + 1。
+3. 返回插入位置：如果没有找到目标值，循环结束后 left 即为目标值将要被插入的位置。
+```
+
+#### 代码
+```python
+class Solution:
+    def searchInsert(self, nums: List[int], target: int) -> int:
+        left, right = 0, len(nums) - 1      
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] == target:
+                return mid
+            elif nums[mid] > target:
+                right = mid - 1
+            else:
+                left = mid + 1
+        return left
+```
