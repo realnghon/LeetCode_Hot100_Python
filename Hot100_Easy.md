@@ -534,22 +534,23 @@ class Solution:
 #### 代码
 ```python
 class Solution:
-    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
-        maxDiameter = 0
-        
-        def depth(node: TreeNode) -> int:
-            nonlocal maxDiameter
-            if not node:
-                return 0
-            leftDepth = depth(node.left)
-            rightDepth = depth(node.right)
-            # 更新最大直径
-            maxDiameter = max(maxDiameter, leftDepth + rightDepth)
-            
-            # 返回该节点的深度
-            return max(leftDepth, rightDepth) + 1
-        depth(root)
-        return maxDiameter
+    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
+        maxDiameter = 0
+        
+        def depth(node: TreeNode) -> int:
+            nonlocal maxDiameter
+            if not node:
+                return 0
+            leftDepth = depth(node.left)
+            rightDepth = depth(node.right)
+            # 更新最大直径
+            maxDiameter = max(maxDiameter, leftDepth + rightDepth)
+            
+            # 返回该节点的深度
+            return max(leftDepth, rightDepth) + 1
+        
+        depth(root)
+        return maxDiameter
 ```
 
 ### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
@@ -625,15 +626,327 @@ class Solution:
 #### 代码
 ```python
 class Solution:
-    def searchInsert(self, nums: List[int], target: int) -> int:
-        left, right = 0, len(nums) - 1      
-        while left <= right:
-            mid = left + (right - left) // 2
-            if nums[mid] == target:
-                return mid
-            elif nums[mid] > target:
-                right = mid - 1
-            else:
-                left = mid + 1
-        return left
+    def searchInsert(self, nums: List[int], target: int) -> int:
+        left, right = 0, len(nums) - 1      
+        while left <= right:
+            mid = left + (right - left) // 2
+            if nums[mid] == target:
+                return mid
+            elif nums[mid] > target:
+                right = mid - 1
+            else:
+                left = mid + 1
+        return left
+```
+
+
+### [20. 有效的括号](https://leetcode.cn/problems/valid-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给定一个只包括 `'('`，`')'`，`'{'`，`'}'`，`'['`，`']'` 的字符串 `s` ，判断字符串是否有效。
+
+有效字符串需满足：
+
+1. 左括号必须用相同类型的右括号闭合。
+2. 左括号必须以正确的顺序闭合。
+3. 每个右括号都有一个对应的相同类型的左括号。
+
+示例：
+
+```
+输入：s = "()"
+
+输出：true
+
+输入：s = "()[]{}"
+
+输出：true
+```
+
+#### 核心思路
+```
+遍历s字符串：
+- 当s[i]为左括号时，将s[i]压栈
+- 当s[i]为右括号时，分为两种情况：
+	- 若栈为空，则栈顶元素无法弹出与s[i]匹配，返回False；
+	- 若栈不为空，则弹出栈顶元素与s[i]匹配。
+		- 当栈顶元素与s[i]匹配时，则继续遍历字符串中下一个元素；
+		- 当栈顶元素和s[i]不匹配时，则返回False
+
+- 时间复杂度：由于压栈和弹栈操作的时间复杂度均为O(1)，因此本题的时间复杂度取决于对字符串的遍历，所以为O(n)
+```
+
+#### 代码
+```python
+class Solution:
+    def isValid(self, s: str) -> bool:
+        stack=[]
+        bracketsMatch={"(":1,"[":2,"{":3,"}":4,"]":5,")":6}
+        for i in range(len(s)):
+            #若为左括号，则入栈
+            if bracketsMatch[s[i]]<=3:
+                stack.append(s[i])
+            else:#若为右括号
+                #首先，若栈此时为空，则return false
+                if len(stack)==0:
+                    return False
+                else:
+                    if bracketsMatch[s[i]]+bracketsMatch[stack.pop()]!=7:
+                        return False
+        return True if len(stack)==0 else False
+```
+
+### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+
+给定一个数组 `prices` ，它的第 `i` 个元素 `prices[i]` 表示一支给定股票第 `i` 天的价格。
+
+你只能选择 **某一天** 买入这只股票，并选择在 **未来的某一个不同的日子** 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 `0` 。
+
+示例：
+```
+输入：[7,1,5,3,6,4]
+输出：5
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+```
+
+#### 核心思路
+
+```
+【贪心算法】
+
+1. 保持最低价格：记录到目前为止的最低股价 `min_price`。
+2. 计算最大利润：
+   - 对于每一天的股价，计算如果在这一天卖出股票的利润，即 `prices[i] - min_price`。
+   - 不断更新最大利润 `max_profit`。
+
+总结：通过维护一个最低买入价和当前最大利润，每天更新这两个数值来计算最大可能利润。
+```
+
+#### 代码
+
+```python
+class Solution(object):
+    def maxProfit(self, prices):
+        if len(prices) == 1:
+            return 0
+        min_price = prices[0]
+        max_profit = 0
+        for i in range(1, len(prices)):
+            min_price = min(min_price, prices[i])
+            max_profit = max(max_profit, prices[i] - min_price)
+        
+        return max_profit
+```
+
+### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+
+假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+示例：
+```
+输入：n = 2
+输出：2
+解释：有两种方法可以爬到楼顶。
+1. 1 阶 + 1 阶
+2. 2 阶
+```
+
+#### 核心思路
+
+```
+
+1. 定义状态：用数组 dp[i] 表示爬到第 i 个台阶的方法数。
+2. 初始化：
+    - 爬 0 个台阶只有一种方法（即不动），所以 dp[0] = 1。
+    - 爬 1 个台阶也只有一种方法（直接爬上去），所以 dp[1] = 1。
+3. 状态转移方程：
+    - 要爬到第 i 个台阶，可以从第 i-1 个台阶爬 1 步到达，也可以从第 i-2 个台阶爬 2 步到达。
+    - 因此，dp[i] = dp[i-1] + dp[i-2]。
+4. 时间复杂度：
+    - 由于每个状态只依赖前两个状态，因此时间复杂度为 O(n)。
+```
+
+#### 代码
+```python
+class Solution:
+    def climbStairs(self, n: int) -> int:
+        dp = [0] * (n + 1)
+        dp[0], dp[1] = 1, 1
+        for i in range(2, n + 1):
+            dp[i] = dp[i - 1] + dp[i - 2]
+        return dp[n]
+```
+
+### [118. 杨辉三角](https://leetcode.cn/problems/pascals-triangle/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+给定一个非负整数 `numRows`，生成「杨辉三角」的前 `numRows` 行。
+
+在「杨辉三角」中，每个数是它左上方和右上方的数的和。
+
+![](https://pic.leetcode-cn.com/1626927345-DZmfxB-PascalTriangleAnimated2.gif)
+
+示例：
+
+```
+输入: numRows = 5
+输出: [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]
+```
+
+#### 核心思路
+
+```
+1. 初始化：
+    - 创建一个长度为 numRows 的二维列表 triangle。
+    - 每行 i 都初始化为有 i+1 个元素的列表，其中第一个和最后一个元素都设为1，因为杨辉三角的两侧边界上的元素都是1。
+2. 填充中间部分： 
+    - 从第三行开始（即索引为2），对每一行的中间元素进行动态规划计算。
+    - 对于 triangle[i][j]，它等于上一行的两个元素之和：triangle[i-1][j-1] + triangle[i-1][j]。
+3. 返回结果： 
+    - 最后返回整个 triangle。
+```
+
+#### 代码
+```python
+class Solution:
+    def generate(self, numRows: int) -> List[List[int]]:
+        if numRows <= 0:
+            return []
+        # Initialize the first row
+        triangle = [[1]]
+        
+        for i in range(1, numRows):
+            row = [1] * (i + 1)  # First step: initialize current row with 1s
+            for j in range(1, i):  # Second step: fill the middle elements
+                row[j] = triangle[i-1][j-1] + triangle[i-1][j]
+            triangle.append(row)
+
+        return triangle
+```
+
+
+### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+
+给你一个 **非空** 整数数组 `nums` ，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+你必须设计并实现线性时间复杂度的算法来解决此问题，且该算法只使用常量额外空间。
+
+示例：
+
+```
+输入：nums = [2,2,1]
+输出：1
+```
+
+#### 核心思路
+```
+异或运算的性质
+1. 任何数与0异或为其本身： (a \oplus 0 = a)
+2. 任何数与其自身异或为0： (a \oplus a = 0)
+
+利用异或运算性质，我们可以在O(n)时间复杂度和O(1)空间复杂度内找到只出现一次的数字。
+因为对于任意两个相同的数，异或后结果为0。而0与任何数异或结果为该数本身。所以，所有成对出现的数在异或后都抵消为0，最终剩下的就是那个只出现一次的数。
+
+具体步骤如下：
+1. 初始化变量result为0。
+2. 遍历数组，对每个元素执行异或运算并更新result。
+3. 最终，result的值即为只出现一次的那个数字。
+```
+
+#### 代码
+```python
+class Solution:
+    def singleNumber(self, nums: List[int]) -> int:
+        result = 0
+        for num in nums:
+            result ^= num
+        return result
+```
+
+### [169. 多数元素](https://leetcode.cn/problems/majority-element/description/?envType=study-plan-v2&envId=top-100-liked)
+
+#### 题目描述
+
+给定一个大小为 `n` 的数组 `nums` ，返回其中的多数元素。多数元素是指在数组中出现次数 **大于** `⌊ n/2 ⌋` 的元素。
+
+你可以假设数组是非空的，并且给定的数组总是存在多数元素。
+
+示例：
+
+```
+输入：nums = [3,2,3]
+输出：3
+```
+
+#### 核心思路
+```
+【方法一：哈希表】
+
+1. 记录次数：
+    - 使用一个哈希表 counts 来记录每个元素出现的次数。
+    - 遍历数组 nums，对每个元素进行统计。
+	    - 如果元素已经在哈希表中，则其对应的计数器加1；
+	    - 如果不在，则初始化该元素的计数器为1。
+2. 查找多数元素：
+    - 遍历哈希表中的所有键值对，找到出现次数大于 [n/2] 的元素，并返回该元素。
+
+时间复杂度：O(n)，因为我们需要遍历数组一次来填充哈希表，然后再遍历哈希表一次来找到多数元素。
+空间复杂度：O(n)，因为最坏情况下，需要存储数组中所有不同的元素的计数。
+
+【方法二：摩尔投票】
+
+1. 候选者和计数器： 
+    - 维护一个变量 candidate 用于跟踪当前的候选多数元素，以及一个 count 计数器来表示 candidate 在目前遇到的元素中的净出现次数。
+2. 遍历数组： 
+    - 如果 count 为 0，说明我们需要更换候选者，将当前元素设为新的候选者，并将 count 设为 1。
+    - 如果当前元素等于 candidate，则 count 加 1。
+    - 如果当前元素不等于 candidate，则 count 减 1。
+3. 最终候选者：
+    - 遍历完成后，candidate 所指的元素就是数组的多数元素。
+
+时间复杂度：O(n)，因为我们只需要一次遍历数组。
+空间复杂度：O(1)，只使用了常数级别的额外空间。
+```
+
+#### 代码
+【方法一：哈希表】
+```python
+class Solution:
+	def majorityElement(self, nums: List[int]) -> int:
+	    counts = {}
+	    for num in nums:
+	        if num in counts:
+	            counts[num] += 1
+	        else:
+	            counts[num] = 1
+
+	    for key, value in counts.items():
+	        if value > len(nums) // 2:
+	            return key
+```
+
+【方法二：摩尔投票】
+```python
+class Solution:
+	def majorityElement(self, nums: List[int]) -> int:
+	    candidate = None
+	    count = 0
+	
+	    for num in nums:
+	        if count == 0:
+	            candidate = num
+	        count += (1 if num == candidate else -1)
+	
+	    return candidate
 ```
