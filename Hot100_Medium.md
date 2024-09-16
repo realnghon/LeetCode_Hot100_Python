@@ -113,26 +113,252 @@ class Solution:
         return max_length
 ```
 
-#### 题目描述
+### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/description/?envType=study-plan-v2&envId=top-100-liked)
 
+#### 题目描述
+给定一个长度为 `n` 的整数数组 `height` 。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])` 。
+
+找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
+
+返回容器可以储存的最大水量。
+
+说明：你不能倾斜容器。
+
+示例：
+
+![](https://aliyun-lc-upload.oss-cn-hangzhou.aliyuncs.com/aliyun-lc-upload/uploads/2018/07/25/question_11.jpg)
+
+```
+输入：[1,8,6,2,5,4,8,3,7]
+输出：49 
+解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+```
 #### 核心思路
+```
+采用双指针的方法实现。
+
+1. 初始化指针和变量：
+    - start 指向 height 数组的最左端。
+    - end 指向 height 数组的最右端。
+    - max_volume 初始化为0。
+2. 循环计算盛水容积，并更新指针：
+    - 当 start < end 时，重复以下步骤：
+        1. 计算当前容积： volume = min(height[start], height[end]) * (end - start)
+        2. 更新最大容积： 若 volume > max_volume，则 max_volume = volume
+        3. 移动较小值对应的指针：
+            - 若 height[start] 小于 height[end]，则 start += 1
+            - 否则，end -= 1
+3. 循环结束时，max_volume 即为最大容积。
+```
 
 #### 代码
+```python
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        start, end = 0, len(height) - 1
+        max_volume = 0
+
+        while start < end:
+            volume = min(height[start], height[end]) * (end - start)
+            max_volume = max(max_volume, volume)
+
+            if height[start] < height[end]:
+                start += 1
+            else:
+                end -= 1
+
+        return max_volume
+```
+
+### [15. 三数之和](https://leetcode.cn/problems/3sum/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
 
-#### 核心思路
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
 
+注意：答案中不可以包含重复的三元组。
+
+示例：
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+#### 核心思路
+```
+1. 特殊情况处理：如果数组为 `null` 或者数组长度小于 `3`，直接返回空结果。
+2. 对数组进行排序。
+3. 遍历排序后的数组：
+   - 如果当前数 nums[i] 大于 0，因为数组已经排序，所以后面的数都大于 0，无法找到三个数的和为 0，因此直接返回空列表。
+   - 如果当前数与前一个数相同，跳过以避免重复解。
+   - 设定两个指针，左指针 L 初始化为 i+1，右指针 R 初始化为数组末尾。
+   - 在 L < R 的情况下，计算 nums[i] + nums[L] + nums[R] 的和：
+     - 如果和为 0，记录这个三元组，并移动 L 和 R 指针，跳过重复元素。
+     - 如果和大于 0，说明 nums[R] 太大，右指针左移。
+     - 如果和小于 0，说明 nums[L] 太小，左指针右移。
+
+复杂度分析：
+- 时间复杂度：排序需要 O(nlog n)，遍历数组和双指针查找的时间复杂度为 O(n^2)，总体复杂度为 O(n^2)
+- 空间复杂度：O(1)
+```
 #### 代码
+```python
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        if len(nums) < 3: return []
+        nums.sort()
+        result = []
+        
+        for i in range(len(nums)):
+            if nums[i] > 0: break
+            if i > 0 and nums[i] == nums[i - 1]: continue
+            
+            L, R = i + 1, len(nums) - 1
+            while L < R:
+                total = nums[i] + nums[L] + nums[R]
+                if total == 0:
+                    result.append([nums[i], nums[L], nums[R]])
+                    while L < R and nums[L] == nums[L + 1]:
+                        L += 1
+                    while L < R and nums[R] == nums[R - 1]:
+                        R -= 1
+                    L += 1
+                    R -= 1
+                elif total < 0:
+                    L += 1
+                else:
+                    R -= 1
+        
+        return result
+```
+
+### [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/description/?envType=study-plan-v2&envId=top-100-liked)
+
 #### 题目描述
+给定一个字符串 `s` ，请你找出其中不含有重复字符的 **最长子串** 的长度。
+
+示例：
+```
+输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 `"abc"`，所以其长度为 3。
+```
 
 #### 核心思路
+```
+目标是找到字符串中最长的无重复字符的子串。
 
+1. 初始化：
+    - 我们定义两个指针 start 和 end，用于表示滑动窗口的起始和结束位置。
+    - 一个哈希集合（HashSet）用来存储当前窗口内的字符，从而帮助我们检测是否有重复字符。
+2. 滑动窗口的操作： 
+    - 扩展窗口：将 end 指针向右移动，即增大窗口的范围。
+    - 检查重复：每次移动 end 后，我们检查新加入窗口的字符 s[end]。
+        - 如果 s[end] 已经存在于集合中，说明出现了重复字符，此时需要缩小窗口。
+        - 为了缩小窗口，我们移动 start 指针，直到没有重复字符为止。在移动 start 的过程中，需要将移出窗口的字符从集合中删除。
+3. 更新最大长度：
+    - 在窗口内没有重复字符时，计算当前窗口的长度（end - start + 1），并更新记录的最大长度。
+4. 继续上述过程，直到 end 指针遍历完整个字符串。
+
+复杂度分析：
+	- 时间复杂度为 O(n)，因为每个字符在最坏情况下只会被访问两次（一次被加入集合，一次被移出集合）。
+```
 #### 代码
+```python
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        if not s:
+            return 0
+        
+        # 初始化指针和结果变量
+        start, max_length = 0, 0
+        char_index_map = {}  # 用于存储字符及其最后出现的位置
+
+        for end in range(len(s)):
+            if s[end] in char_index_map and char_index_map[s[end]] >= start:
+                # 如果当前字符已经存在于字典中且其索引在start之后或等于start，说明有重复字符，
+                # 需要移动start指针，以排除重复字符
+                start = char_index_map[s[end]] + 1
+            
+            # 更新字符的最新索引位置
+            char_index_map[s[end]] = end
+            
+            # 更新最长无重复子串的长度
+            max_length = max(max_length, end - start + 1)
+
+        return max_length
+```
+
+### [438. 找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/description/?envType=study-plan-v2&envId=top-100-liked)
+
 #### 题目描述
+给定两个字符串 `s` 和 `p`，找到 `s` 中所有 `p` 的 **异位词** 的子串，返回这些子串的起始索引。不考虑答案输出的顺序。
+
+**异位词** 指由相同字母重排列形成的字符串（包括相同的字符串）。
+
+示例：
+
+```
+输入：s = "cbaebabacd", p = "abc"
+输出：[0,6]
+解释：
+起始索引等于 0 的子串是 "cba", 它是 "abc" 的异位词。
+起始索引等于 6 的子串是 "bac", 它是 "abc" 的异位词。
+```
 
 #### 核心思路
+```
+【方法一：滑动窗口 + 计数器】
+1. 初始化计数器： 初始化 p_count 和 s_count 各需要 O(n) 时间，其中 n 是字符串 p 的长度。
+2. 滑动窗口过程：
+	- 每次移动窗口时，添加新字符和移除老字符的操作都是 O(1) 时间复杂度。
+	- 比较两个字典是否相等（s_count == p_count）的时间复杂度是 O(1)，因为字典的键数固定为 26（即字符集大小）。
+
+因此，这种方法的总时间复杂度为 O(m + (m-n+1) * 1) = O(m) ，其中 m 是字符串 s 的长度。
+
+【方法二：滑动窗口 + 排序】
+1. 初始化排序： 对字符串 p 进行排序需要 O(n log n) 时间。
+2. 滑动窗口过程：
+	- 每次移动窗口时，对滑动窗口内的字符串进行排序，时间复杂度是 O(n log n)，其中 n 是窗口大小（即 p 的长度）。
+	- 比较两个排序后的字符串的时间复杂度是 O(n)。
+
+因此，这种方法的总时间复杂度为 O((m-n+1) * (n log n + n)) = O((m-n+1) * n log n)，其中 m 是字符串 s 的长度。
+```
 
 #### 代码
+【方法一：滑动窗口 + 计数器】
+```python
+class Solution:
+    def findAnagrams(self, s: str, p: str) -> List[int]:
+        # 初始化 p 的字符计数器和滑动窗口的字符计数器
+        p_count = Counter(p)
+        s_count = Counter(s[:len(p)-1])
+        
+        result = []
+        # 遍历字符串 s，从索引 len(p)-1 到 len(s)-1
+        for i in range(len(p)-1, len(s)):
+            # 将新的字符加入当前滑动窗口的计数器中
+            s_count[s[i]] += 1
+            
+            # 如果当前窗口的字符计数器与 p 的字符计数器相同，则记录起始索引
+            if s_count == p_count:
+                result.append(i - len(p) + 1)
+            
+            # 移除当前窗口左侧即将滑出字符的计数
+            s_count[s[i - len(p) + 1]] -= 1
+            # 如果某个字符的计数变为零，将其从计数器中删除
+            if s_count[s[i - len(p) + 1]] == 0:
+                del s_count[s[i - len(p) + 1]]
+        
+        return result
+```
+
 #### 题目描述
 
 #### 核心思路
