@@ -359,11 +359,55 @@ class Solution:
         return result
 ```
 
+### [560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个整数数组 `nums` 和一个整数 `k` ，请你统计并返回该数组中和为 `k` 的子数组的个数。
 
+子数组是数组中元素的连续非空序列。
+
+示例：
+
+```
+输入：nums = [1,1,1], k = 2
+输出：2
+```
 #### 核心思路
+```
+首先，我们了解问题要求是找到和为 k 的子数组。这意味着我们需要计算很多子数组的和。如果使用暴力方法逐个计算所有可能的子数组和，将会导致时间复杂度非常高，达到 O(n^2) 或更高。在大型数据集上，这种方法效率极低。
+
+1. 前缀和（Prefix Sum）
+为了解决上述问题，可以引入前缀和的概念。前缀和是从数组的起点到当前位置的元素总和。有了前缀和，任意子数组的和可以通过两个前缀和之差快速计算出来：如果我们知道从起点到第 j 个位置的前缀和 prefix_sum_j 和从起点到第 i 个位置的前缀和 prefix_sum_i，那么从 i+1 到 j 的子数组的和为 prefix_sum_j - prefix_sum_i。
+
+2. 哈希表优化查找
+为了快速查找某个前缀和是否存在，以及其出现次数，我们可以使用哈希表。当遍历数组时，我们记录每个前缀和及其出现的次数。这样我们就能快速判断之前是否有某个前缀和使得当前前缀和减去它等于 k。
+
+解题步骤的推导
+1. 初始化：
+	- prefix_sum = 0: 表示初始的前缀和。
+	- prefix_sum_count = {0: 1}: 初始化哈希表，表示前缀和为0的情况出现一次。这一步很重要，它处理了当从数组开头到某个位置子数组和恰好为 k 的情况。
+
+2. 遍历数组：
+	- 对每个元素，更新当前前缀和 prefix_sum。
+	- 检查 prefix_sum - k 是否在 prefix_sum_count 中：如果在，说明存在之前的一个前缀和，使得这段区间的和为 k，于是增加计数器。
+	- 将当前前缀和加入或更新到 prefix_sum_count 中。
+```
 
 #### 代码
+```python
+class Solution:
+    def subarraySum(self, nums: List[int], k: int) -> int:
+        prefix_sum = 0  # 初始化前缀和
+        prefix_sum_count = {0: 1}  # 初始化哈希表，包含前缀和为0的情况
+        count = 0  # 初始化计数器
+        
+        for num in nums:
+            prefix_sum += num  # 更新当前前缀和
+            count += prefix_sum_count.get(prefix_sum - k, 0)  # 如果存在符合条件的前缀和，则增加计数
+            prefix_sum_count[prefix_sum] = prefix_sum_count.get(prefix_sum, 0) + 1  # 更新当前前缀和出现次数
+                
+        return count  # 返回计数结果
+```
+
 #### 题目描述
 
 #### 核心思路
