@@ -408,26 +408,203 @@ class Solution:
         return count  # 返回计数结果
 ```
 
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个整数数组 `nums` ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+**子数组**是数组中的一个连续部分。
+
+示例：
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+#### 核心思路
+```
+动态规划思路（Kadane算法）
+
+Kadane算法是一种线性时间复杂度O(n)的动态规划算法，用来解决最大子数组和问题。该算法的核心在于通过迭代数组，计算以每个位置结尾的子数组的最大和，并实时更新全局最大和。
+
+1. 初始条件：
+    - 使用一个变量 current_sum 来表示当前子数组的和。
+    - 使用另一个变量 max_sum 来记录找到的最大和。
+    - 初始化 current_sum 和 max_sum 为数组的第一个元素，因为单独一个元素也是一个子数组。
+2. 迭代数组： 
+    - 从第二个元素开始遍历数组。
+    - 对于每个元素 nums[i]，current_sum = max(nums[i], current_sum + nums[i])。
+        - 如果 current_sum + nums[i] 比 nums[i] 大，则意味着延续前面的子数组是有益的。
+        - 否则，从当前元素重新开始一个新的子数组。
+    - 更新全局最大和：max_sum = max(max_sum, current_sum)，这样可以确保 max_sum 永远是我们迄今为止找到的最大子数组和。
+3. 返回结果：
+    - 最后，max_sum 就是所求的具有最大和的连续子数组的和。
+```
+#### 代码
+```python
+class Solution:
+    def maxSubArray(self, nums: List[int]) -> int:
+        # 初始化当前子数组和和最大子数组和为第一个元素
+        current_sum = max_sum = nums[0]
+        
+        # 从第二个元素开始遍历数组
+        for num in nums[1:]:
+            # 当前子数组和的计算
+            current_sum = max(num, current_sum + num)
+            # 更新全局最大和
+            max_sum = max(max_sum, current_sum)
+        
+        return max_sum
+```
+
+### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+以数组 `intervals` 表示若干个区间的集合，其中单个区间为 `intervals[i] = [starti, endi]` 。请你合并所有重叠的区间，并返回一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间。
+
+示例：
+
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+```
 
 #### 核心思路
-
+```
+1. 排序：首先按照每个区间的起始值对intervals进行排序。
+2. 初始化结果列表：创建一个空列表merged用于存储最终的合并结果。
+3. 遍历区间：
+    - 如果merged为空或者当前区间与merged的最后一个区间不重叠，将当前区间加入merged。
+    - 否则，合并当前区间与merged的最后一个区间。
+```
 #### 代码
+```python
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        # 按起始值排序区间
+        intervals.sort(key=lambda x: x[0])
+        merged_intervals = []
+        
+        for current in intervals:
+            if not merged_intervals or merged_intervals[-1][1] < current[0]:
+                merged_intervals.append(current)
+            else:
+                merged_intervals[-1][1] = max(merged_intervals[-1][1], current[1])
+        
+        return merged_intervals
+```
+
+### [189. 轮转数组](https://leetcode.cn/problems/rotate-array/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
 
+给定一个整数数组 `nums`，将数组中的元素向右轮转 `k` 个位置，其中 `k` 是非负数。
+
+示例：
+
+```
+输入：nums = [1,2,3,4,5,6,7], k = 3
+输出：[5,6,7,1,2,3,4]
+解释：
+向右轮转 1 步: [7,1,2,3,4,5,6]
+向右轮转 2 步: [6,7,1,2,3,4,5]
+向右轮转 3 步: [5,6,7,1,2,3,4]
+```
+
 #### 核心思路
+```
+【方法一】
+
+1. 计算有效的旋转步数： 通过 k = k % n，确保旋转步数不超过数组长度。
+2. 切片操作重新排列数组：
+    - 使用 nums[-k:] 获取数组末尾 k 个元素。
+    - 使用 nums[:-k] 获取数组前面部分。
+    - 将这两个部分拼接起来形成新的数组顺序，并赋值给原数组 nums[:]。
+
+- 时间复杂度：(O(n))。切片操作需要遍历整个数组，因此时间复杂度为 (O(n))。
+- 空间复杂度：(O(n))。虽然没有显式地使用额外的数据结构，但切片操作会产生临时数组，占用额外的空间。
+
+【方法二】
+
+1. 整体翻转数组：将整个数组完全反转。
+2. 翻转前 k 个元素：将前 k 个元素再次反转。
+3. 翻转后 n-k 个元素：将后 n-k 个元素再次反转。
+
+- 时间复杂度：(O(n))。每次翻转操作需要遍历部分或者整个数组，总共三次翻转，因此时间复杂度为 (O(n))。
+- 空间复杂度：(O(1))。只使用了常数个额外空间用于变量存储，没有使用额外的数据结构。
+```
 
 #### 代码
+【方法一】
+```python
+class Solution:
+    def rotate(self, nums: List[int], k: int) -> None:
+        n = len(nums)
+        k = k % n  # 防止 k 超过数组长度
+        nums[:] = nums[-k:] + nums[:-k]
+```
+
+【方法二】
+```python
+class Solution:
+    def rotate(self, nums: List[int], k: int) -> None:
+        n = len(nums)
+        k = k % n  # 防止 k 超过数组长度
+        
+        def reverse(start: int, end: int) -> None:
+            while start < end:
+                nums[start], nums[end] = nums[end], nums[start]
+                start += 1
+                end -= 1
+
+        reverse(0, n - 1)
+        reverse(0, k - 1)
+        reverse(k, n - 1)
+```
+
+### [238. 除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
 
+给你一个整数数组 `nums`，返回 数组 `answer` ，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 之外其余各元素的乘积 。
+
+题目数据 **保证** 数组 `nums`之中任意元素的全部前缀元素和后缀的乘积都在  **32 位** 整数范围内。
+
+请不要使用除法，且在 `O(n)` 时间复杂度内完成此题。
+
+示例：
+
+```
+输入：nums = [1,2,3,4]
+输出：[24,12,8,6]
+```
+
 #### 核心思路
+```
+我们需要找到一个不包含nums[i]的数组乘积，并且要求时间复杂度为O(n)且不使用除法。可以通过前缀积和后缀积的方法来实现。
 
+1. 计算前缀积：创建一个与输入数组等长的结果数组answer。首先将answer初始化为全1，然后遍历一遍数组，将每个位置的值替换为该位置之前所有元素的乘积。
+2. 计算后缀积：在同一个结果数组中从后向前遍历，同时维护一个变量suffix_product表示从当前元素到最后一个元素的乘积。将answer中的每个元素与suffix_product相乘，然后更新suffix_product。
+
+通过上述方法，我们可以在一次遍历中完成前缀积的计算，另一遍遍历中完成后缀积的计算，从而满足O(n)的时间复杂度要求。同时，借助结果数组本身来存储计算结果，实现了O(1)的空间复杂度（不包括输出数组）。
+```
 #### 代码
-#### 题目描述
+```python
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        n = len(nums)
+        answer = [1] * n  # 初始化结果数组，全1
+        # 计算前缀积并存储在 answer 中
+        for i in range(1, n):
+            answer[i] = answer[i - 1] * nums[i - 1]
+            
+        suffix_product = 1  # 初始化后缀积为1
+        # 计算后缀积，并直接更新 answer
+        for i in range(n - 1, -1, -1):  # 从后往前遍历数组
+            answer[i] *= suffix_product  # 将当前后缀积乘以 answer 中对应位置的值
+            suffix_product *= nums[i]  # 更新后缀积
+        
+        return answer
+```
 
-#### 核心思路
-
-#### 代码
 #### 题目描述
 
 #### 核心思路
