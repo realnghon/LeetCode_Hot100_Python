@@ -605,26 +605,243 @@ class Solution:
         return answer
 ```
 
-#### 题目描述
+### [73. 矩阵置零](https://leetcode.cn/problems/set-matrix-zeroes/description/?envType=study-plan-v2&envId=top-100-liked)
 
+#### 题目描述
+给定一个 m×n 的矩阵，如果一个元素为 **0** ，则将其所在行和列的所有元素都设为 **0** 。请使用原地算法。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/08/17/mat1.jpg)
+
+```
+输入：matrix = [[1,1,1],[1,0,1],[1,1,1]]
+输出：[[1,0,1],[0,0,0],[1,0,1]]
+```
 #### 核心思路
+```
+要解决这个问题，可以使用矩阵的第一行和第一列作为标记，来记录哪些行和哪些列需要被设为0。这样可以避免使用额外的空间。
+
+1. 检查第一行和第一列是否有0：首先检查矩阵的第一行和第一列中是否有0，因为这两个位置会被用来标记其他行和列。
+    
+2. 使用第一行和第一列作为标记：遍历矩阵的其余部分（从第二行和第二列开始），如果某个元素是0，就将该元素所在的行的第一个元素和列的第一个元素设为0，作为标记。
+    
+3. 根据标记设置0：再次遍历矩阵（从第二行和第二列开始），如果某个元素所在的行的第一个元素或列的第一个元素是0，就将该元素设为0。
+    
+4. 处理第一行和第一列：最后，根据第一步中记录的信息，决定是否将第一行和第一列全部设为0。
+```
 
 #### 代码
+```python
+class Solution:
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        m, n = len(matrix), len(matrix[0])
+        
+        # 检查第一行是否有0
+        first_row_has_zero = any(matrix[0][j] == 0 for j in range(n))
+        # 检查第一列是否有0
+        first_col_has_zero = any(matrix[i][0] == 0 for i in range(m))
+        
+        # 使用第一行和第一列作为标记
+        for i in range(1, m):
+            for j in range(1, n):
+                if matrix[i][j] == 0:
+                    matrix[i][0] = 0  # 标记第i行需要变为0
+                    matrix[0][j] = 0  # 标记第j列需要变为0
+        
+        # 根据标记设置0
+        for i in range(1, m):
+            for j in range(1, n):
+                if matrix[i][0] == 0 or matrix[0][j] == 0:
+                    matrix[i][j] = 0
+        
+        # 处理第一行，如果第一行原来存在0，则将第一行全部变为0
+        if first_row_has_zero:
+            for j in range(n):
+                matrix[0][j] = 0
+        
+        # 处理第一列，如果第一列原来存在0，则将第一列全部变为0
+        if first_col_has_zero:
+            for i in range(m):
+                matrix[i][0] = 0
+```
+
+### [54. 螺旋矩阵](https://leetcode.cn/problems/spiral-matrix/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个 `m` 行 `n` 列的矩阵 `matrix` ，请按照 **顺时针螺旋顺序** ，返回矩阵中的所有元素。
 
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/11/13/spiral1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+```
 #### 核心思路
+```
+这道题可以通过模拟螺旋遍历的方式来解决。核心思想是按照顺时针方向逐步缩小遍历的范围，直到遍历完整个矩阵。
 
+1. 初始化边界：定义四个边界变量 top, bottom, left, right，分别表示当前未遍历的矩阵的上、下、左、右边界。
+
+2. 循环遍历：
+	- 从左到右：遍历 left 到 right 的顶部行，然后将 top 下移一行。
+	- 从上到下：遍历 top 到 bottom 的右侧列，然后将 right 左移一列。
+	- 从右到左：遍历 right 到 left 的底部行，然后将 bottom 上移一行。
+	- 从下到上：遍历 bottom 到 top 的左侧列，然后将 left 右移一列。
+
+3. 终止条件：当 top 超过 bottom 或 left 超过 right 时，遍历结束。
+
+通过这种方式，可以确保每个元素只被访问一次，并且按照顺时针螺旋顺序返回所有元素。
+```
 #### 代码
+```python
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        if not matrix or not matrix[0]:
+            return []
+        
+        m, n = len(matrix), len(matrix[0])
+        top, bottom, left, right = 0, m - 1, 0, n - 1
+        result = []
+        
+        while top <= bottom and left <= right:
+            # 从左到右遍历顶部行
+            for i in range(left, right + 1):
+                result.append(matrix[top][i])
+            top += 1  # 顶部行已遍历，下移一行
+            
+            # 从上到下遍历右侧列
+            for i in range(top, bottom + 1):
+                result.append(matrix[i][right])
+            right -= 1  # 右侧列已遍历，左移一列
+            
+            # 检查是否还有剩余的行和列
+            if top <= bottom:
+                # 从右到左遍历底部行
+                for i in range(right, left - 1, -1):
+                    result.append(matrix[bottom][i])
+                bottom -= 1  # 底部行已遍历，上移一行
+            
+            if left <= right:
+                # 从下到上遍历左侧列
+                for i in range(bottom, top - 1, -1):
+                    result.append(matrix[i][left])
+                left += 1  # 左侧列已遍历，右移一列
+        
+        return result
+```
+
+### [48. 旋转图像](https://leetcode.cn/problems/rotate-image/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个 _n_ × _n_ 的二维矩阵 `matrix` 表示一个图像。请你将图像顺时针旋转 90 度。
 
+你必须在 **原地** 旋转图像，这意味着你需要直接修改输入的二维矩阵。**请不要** 使用另一个矩阵来旋转图像。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/08/28/mat1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[[7,4,1],[8,5,2],[9,6,3]]
+```
 #### 核心思路
+```
+1. 确定层数：
+    - 对于一个 n × n 的矩阵，旋转层数为 n // 2
 
+2. 逐层旋转：
+    - 每次选择一个层，从 top 行开始，按顺时针方向交换四个角上的元素
+3. 具体元素交换：  
+    对于每个需要旋转的层和边界：
+    - matrix[top][i] 表示当前层的上边元素，存储到临时变量 temp 中。
+    - 左边元素 matrix[bottom - offset][top] 移到上边。
+    - 下边元素 matrix[bottom][bottom - offset] 移到左边。
+    - 右边元素 matrix[i][bottom] 移到下边。
+    - 最后将存储的 temp 移到右边。
+```
 #### 代码
+```python
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        n = len(matrix)
+        
+        # 逐层旋转
+        for layer in range(n // 2):
+            # 当前层的边界
+            top, bottom = layer, n - 1 - layer
+            
+            for i in range(top, bottom):
+                # 计算偏移量
+                offset = i - top
+                
+                # 顺时针旋转四个位置
+                
+                # 保存上边元素
+                temp = matrix[top][i]
+                # 左 -> 上
+                matrix[top][i] = matrix[bottom - offset][top]
+                # 下 -> 左
+                matrix[bottom - offset][top] = matrix[bottom][bottom - offset]
+                # 右 -> 下
+                matrix[bottom][bottom - offset] = matrix[i][bottom]
+                # 上 -> 右
+                matrix[i][bottom] = temp
+
+```
+
+### [240. 搜索二维矩阵 II](https://leetcode.cn/problems/search-a-2d-matrix-ii/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+编写一个高效的算法来搜索 `m × n` 矩阵 `matrix` 中的一个目标值 `target` 。该矩阵具有以下特性：
 
+- 每行的元素从左到右升序排列。
+- 每列的元素从上到下升序排列。
+
+示例：
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/11/25/searchgrid2.jpg)
+
+```
+输入：matrix = [[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], target = 5
+输出：true
+```
 #### 核心思路
+```
+从矩阵的右上角开始搜索，这样每一步都可以通过比较大小来确定下一步的方向。详细步骤如下：
 
+1. 从右上角开始：我们选择从矩阵的右上角（即第一行的最后一个元素）开始。这个位置有一个特殊的性质：
+    - 如果当前元素比目标值 target 大，我们可以往左移动，因为同一行左边的元素更小。
+    - 如果当前元素比目标值 target 小，我们可以向下移动，因为同一列下面的元素更大。
+
+2. 不断缩小搜索空间：根据上面的逻辑，我们每次都可以抛弃一整行或一整列，因此每次比较都有效地缩小了搜索范围。
+    
+3. 终止条件：如果找到了目标值，返回 True。如果搜索越界（即行列索引超出矩阵范围），则返回 False，表示未找到目标值。
+```
 #### 代码
+```python
+class Solution:
+    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
+        # 获取矩阵的行数和列数
+        if not matrix or not matrix[0]:
+            return False
+        rows, cols = len(matrix), len(matrix[0])
+        
+        # 从右上角开始
+        row, col = 0, cols - 1
+        
+        while row < rows and col >= 0:
+            if matrix[row][col] == target:
+                return True
+            elif matrix[row][col] > target:
+                # 如果当前元素比目标大，向左移动
+                col -= 1
+            else:
+                # 如果当前元素比目标小，向下移动
+                row += 1
+        
+        return False
+```
 #### 题目描述
 
 #### 核心思路
