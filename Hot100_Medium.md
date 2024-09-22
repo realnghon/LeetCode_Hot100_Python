@@ -842,41 +842,488 @@ class Solution:
         
         return False
 ```
+
+### [142. 环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个链表的头节点  `head` ，返回链表开始入环的第一个节点。 如果链表无环，则返回 `null`。
 
+如果链表中有某个节点，可以通过连续跟踪 `next` 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 `pos` 来表示链表尾连接到链表中的位置（**索引从 0 开始**）。如果 `pos` 是 `-1`，则在该链表中没有环。**注意：`pos` 不作为参数进行传递**，仅仅是为了标识链表的实际情况。
+
+**不允许修改** 链表。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2018/12/07/circularlinkedlist.png)
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：返回索引为 1 的链表节点
+解释：链表中有一个环，其尾部连接到第二个节点。
+```
 #### 核心思路
+```
+快慢指针用来检测链表中是否存在环。一旦快慢指针相遇，说明链表中存在环。接下来的关键是如何找到环的起始节点。
 
+1. 检测环：
+    - 使用两个指针 slow 和 fast，slow 每次移动一步，fast 每次移动两步。
+    - 如果 fast 和 slow 相遇，则说明链表中存在环。
+
+2. 找到环的起始节点： 
+    - 当 fast 和 slow 相遇时，将其中一个指针（例如 slow）重置到链表的头部。
+    - 然后，两个指针都每次移动一步，直到它们再次相遇。这个相遇点就是环的起始节点。
+
+原理：
+
+假设链表的头部到环的起始节点的距离为 a，环的长度为 b。当 slow 和 fast 相遇时，slow 走了 a + b * k 步，fast 走了 a + b * m 步，其中 m > k。因为 fast 的速度是 slow 的两倍，所以有： [ 2(a + b * k) = a + b * m ] 简化后得到： [ a = (m - 2k) * b ] 这说明 a 是环长度 b 的整数倍。因此，当 slow 从头开始，fast 从相遇点开始，每次移动一步时，它们会在环的起始节点相遇。
+```
 #### 代码
+```python
+class Solution:
+    def detectCycle(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head or not head.next:
+            return None
+
+        slow = head
+        fast = head
+
+        # 检测是否有环
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:
+                break
+        else:
+            return None
+
+        # 找到环的起始节点
+        slow = head
+        while slow != fast:
+            slow = slow.next
+            fast = fast.next
+
+        return slow
+```
+### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你两个 **非空** 的链表，表示两个非负的整数。它们每位数字都是按照 **逆序** 的方式存储的，并且每个节点只能存储 **一位** 数字。
 
+请你将两个数相加，并以相同形式返回一个表示和的链表。
+
+你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+示例：
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/01/02/addtwonumber1.jpg)
+
+```
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807
+```
 #### 核心思路
+```
+1. 初始化结果链表和进位变量：
+	- 创建一个虚拟头节点 dummy，用于简化边界条件处理。
+	- 初始化进位变量 carry 为 0。
 
+2. 遍历两个链表：
+	- 使用两个指针 p1 和 p2 分别指向链表 L1 和 L2 的头节点。
+	- 创建一个指针 current 指向 dummy，用于构建结果链表。
+
+3. 逐位相加：
+	- 在 p1 或 p2 不为空时，执行以下操作：
+		- 计算当前位的和 sum = (p1.val if p1 else 0) + (p2.val if p2 else 0) + carry。
+		- 更新进位 carry = sum // 10。
+		- 创建一个新节点，节点值为 sum % 10，并将其连接到结果链表的末尾。
+		- 移动 current 指针到新节点。
+		- 如果 p1 不为空，移动 p1 指针到下一个节点。
+		- 如果 p2 不为空，移动 p2 指针到下一个节点。
+
+4. 处理剩余的进位：
+	- 如果遍历完两个链表后，carry 仍不为 0，则在结果链表的末尾新增一个节点，节点值为 carry。
+
+5. 返回结果链表：
+	- 返回 dummy.next，即结果链表的头节点。
+```
 #### 代码
+```python
+class Solution:
+    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+        # 创建虚拟头节点，用于简化链表操作
+        dummy = ListNode(0)
+        current = dummy
+        carry = 0
+
+        # 遍历两个链表，直到两者都为空
+        while l1 or l2:
+            # 计算当前位的和，考虑进位
+            sum_val = (l1.val if l1 else 0) + (l2.val if l2 else 0) + carry
+            carry = sum_val // 10  # 更新进位
+            current.next = ListNode(sum_val % 10)  # 创建新节点，存储当前位的值
+            current = current.next  # 移动 current 指针到新节点
+
+            # 移动 l1 和 l2 指针到下一个节点
+            if l1:
+                l1 = l1.next
+            if l2:
+                l2 = l2.next
+
+        # 如果最后有进位，需要在结果链表的末尾新增一个节点
+        if carry > 0:
+            current.next = ListNode(carry)
+
+        # 返回结果链表的头节点，即虚拟头节点的下一个节点
+        return dummy.next
+```
+### [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
 
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/10/03/remove_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], n = 2
+输出：[1,2,3,5]
+```
 #### 核心思路
+```
+使用快慢指针解决删除链表的倒数第 n 个结点的问题是一个非常高效的方法。这里的关键在于如何让两个指针在链表中保持一定的距离，从而当一个指针到达链表末尾时，另一个指针正好指向需要删除的结点的前一个结点。
 
+1. 初始化指针： 
+    - 创建一个虚拟头结点 dummy，它的 next 指向原链表的头结点 head。这样做可以简化边界条件的处理，尤其是当需要删除的结点是头结点时。
+    - 初始化两个指针 fast 和 slow，都指向 dummy。
+
+2. 移动快指针：
+    - 先移动 fast 指针 n 步。这样 fast 和 slow 之间的距离就是 n。
+
+3. 同时移动两个指针：
+    - 当 fast 指针到达链表末尾时（即 fast.next 为 None），slow 指针正好指向需要删除的结点的前一个结点。
+    - 这是因为 fast 和 slow 之间的距离始终保持为 n，所以当 fast 到达末尾时，slow 就在倒数第 n 个结点的前一个位置。
+
+4. 删除结点：
+    - 修改 slow 的 next 指针，使其跳过需要删除的结点，即 slow.next = slow.next.next。
+
+5. 返回结果：
+    - 返回 dummy.next，即新的链表头结点。
+```
 #### 代码
+```python
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        # 创建虚拟头结点，简化边界条件处理
+        dummy = ListNode(0, head)
+        
+        # 初始化快慢指针
+        fast = slow = dummy
+        
+        # 移动快指针 n 步
+        for _ in range(n):
+            fast = fast.next
+        
+        # 同时移动两个指针，直到快指针到达链表末尾
+        while fast.next:
+            fast = fast.next
+            slow = slow.next
+        
+        # 删除结点
+        slow.next = slow.next.next
+        
+        # 返回新的头结点
+        return dummy.next
+```
+### [24. 两两交换链表中的节点](https://leetcode.cn/problems/swap-nodes-in-pairs/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个链表，两两交换其中相邻的节点，并返回交换后链表的头节点。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
 
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/10/03/swap_ex1.jpg)
+
+```
+输入：head = [1,2,3,4]
+输出：[2,1,4,3]
+```
 #### 核心思路
+```
+解决这个问题的一个有效方法是使用迭代，通过维护几个指针来交换链表中的节点。
 
+1. 创建一个虚拟头节点
+	- 为了简化边界情况的处理，可以在原链表的头部添加一个虚拟头节点（dummy node），这样可以方便地处理原链表头部的节点交换。
+
+2. 初始化指针
+	- prev 指向虚拟头节点，用于记录当前需要交换的两个节点的前一个节点。
+	- current 指向链表的头节点，即需要交换的第一个节点。
+	- next 指向当前节点的下一个节点，即需要交换的第二个节点。
+
+3. 迭代交换节点
+	在循环中，每次交换两个相邻的节点，并更新指针：
+	- 将 prev 的 next 指向 next（即第二个节点）。
+	- 将 current 的 next 指向 next.next（即第二个节点的下一个节点）。
+	- 将 next 的 next 指向 current（即将第二个节点的 next 指向第一个节点）。
+	- 更新 prev 和 current 指针，以便处理下一对节点。
+
+4. 返回新的头节点
+	- 当所有节点都交换完成后，返回虚拟头节点的 next，即新的链表头节点。
+```
 #### 代码
+```python
+class Solution:
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        # 创建虚拟头节点，方便处理链表头部的交换
+        dummy = ListNode(0)
+        dummy.next = head
+        prev = dummy
+        
+        while head and head.next:
+            # 定义需要交换的两个节点
+            first = head
+            second = head.next
+            
+            # 交换节点
+            # 1. 将 prev 的 next 指向 second
+            prev.next = second
+            # 2. 将 first 的 next 指向 second 的 next
+            first.next = second.next
+            # 3. 将 second 的 next 指向 first
+            second.next = first
+            
+            # 更新指针，准备处理下一对节点
+            prev = first
+            head = first.next
+        
+        # 返回新的链表头节点
+        return dummy.next
+```
+### [138. 随机链表的复制](https://leetcode.cn/problems/copy-list-with-random-pointer/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个长度为 `n` 的链表，每个节点包含一个额外增加的随机指针 `random` ，该指针可以指向链表中的任何节点或空节点。
 
+构造这个链表的 **[深拷贝](https://baike.baidu.com/item/%E6%B7%B1%E6%8B%B7%E8%B4%9D/22785317?fr=aladdin)**。 深拷贝应该正好由 `n` 个 **全新** 节点组成，其中每个新节点的值都设为其对应的原节点的值。新节点的 `next` 指针和 `random` 指针也都应指向复制链表中的新节点，并使原链表和复制链表中的这些指针能够表示相同的链表状态。**复制链表中的指针都不应指向原链表中的节点** 。
+
+例如，如果原链表中有 `X` 和 `Y` 两个节点，其中 `X.random --> Y` 。那么在复制链表中对应的两个节点 `x` 和 `y` ，同样有 `x.random --> y` 。
+
+返回复制链表的头节点。
+
+用一个由 `n` 个节点组成的链表来表示输入/输出中的链表。每个节点用一个 `[val, random_index]` 表示：
+
+- `val`：一个表示 `Node.val` 的整数。
+- `random_index`：随机指针指向的节点索引（范围从 `0` 到 `n-1`）；如果不指向任何节点，则为  `null` 。
+
+你的代码 **只** 接受原链表的头节点 `head` 作为传入参数。
+
+示例：
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/01/09/e1.png)
+```
+输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+```
 #### 核心思路
+```
+1. 复制每个节点并插入到原节点后面：
+    - 首先遍历原链表，对于每个节点，创建一个新的节点，并将其插入到当前节点和下一个节点之间。这样，原链表 A -> B -> C 变成 A -> A' -> B -> B' -> C -> C'，其中 A', B', C' 是新复制的节点。
 
+2. 设置新节点的随机指针：
+    - 再次遍历链表，这次设置每个新节点的 random 指针。由于新节点紧跟在原节点后面，原节点的 random 指针指向的节点后面就是新节点的 random 指针应该指向的节点。例如，如果原节点 A 的 random 指针指向 B，那么新节点 A' 的 random 指针应该指向 B'。
+
+3. 分离两个链表：
+    - 最后，我们需要将原链表和新链表分开。遍历链表，将新节点从原链表中分离出来，恢复原链表的结构，同时构建新链表。
+```
 #### 代码
+```python
+class Solution:
+    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':
+        if not head:
+            return None
+
+        # Step 1: 创建新节点并插入到原节点后面
+        curr = head
+        while curr:
+            # 创建新节点，并将其值设为当前节点的值
+            new_node = Node(curr.val, curr.next, None)
+            # 将新节点插入到当前节点和下一个节点之间
+            curr.next = new_node
+            # 移动到下一个原节点
+            curr = new_node.next
+
+        # Step 2: 设置新节点的随机指针
+        curr = head
+        while curr:
+            # 如果当前节点有随机指针
+            if curr.random:
+                # 新节点的随机指针应该指向原节点随机指针对应的新节点
+                curr.next.random = curr.random.next
+            # 移动到下一个原节点
+            curr = curr.next.next
+
+        # Step 3: 分离两个链表
+        old_head = head
+        new_head = head.next
+        curr_old = old_head
+        curr_new = new_head
+
+        while curr_old:
+            # 恢复原链表的结构
+            curr_old.next = curr_old.next.next if curr_old.next else None
+            # 构建新链表的结构
+            curr_new.next = curr_new.next.next if curr_new.next else None
+            # 移动到下一个原节点
+            curr_old = curr_old.next
+            # 移动到新链表的下一个新节点
+            curr_new = curr_new.next
+
+        return new_head
+```
+### [148. 排序链表](https://leetcode.cn/problems/sort-list/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你链表的头结点 `head` ，请将其按 **升序** 排列并返回 **排序后的链表** 。
 
+示例：
+![](https://assets.leetcode.com/uploads/2020/09/14/sort_list_1.jpg)
+```
+输入：head = [4,2,1,3]
+输出：[1,2,3,4]
+```
 #### 核心思路
+```
+归并排序（Merge Sort）的时间复杂度为 O(nlog n)，空间复杂度为 O(1)（如果使用自底向上的方法）。
 
+1. 找到链表的中间节点：使用快慢指针法，快指针每次移动两步，慢指针每次移动一步，当快指针到达链表末尾时，慢指针正好在中间。
+2. 分割链表：将链表从中间节点分成两个子链表。
+3. 递归排序：对两个子链表分别进行归并排序。
+4. 合并排序后的子链表：将两个有序的子链表合并成一个有序的链表。
+```
 #### 代码
+```python
+class Solution:
+    def sortList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head or not head.next:
+            return head
+        
+        # 找到链表的中间节点
+        def find_mid(head: ListNode) -> ListNode:
+            slow, fast = head, head.next
+            while fast and fast.next:
+                slow = slow.next
+                fast = fast.next.next
+            return slow
+        
+        # 合并两个有序链表
+        def merge(l1: ListNode, l2: ListNode) -> ListNode:
+            dummy = ListNode()
+            current = dummy
+            while l1 and l2:
+                if l1.val < l2.val:
+                    current.next = l1
+                    l1 = l1.next
+                else:
+                    current.next = l2
+                    l2 = l2.next
+                current = current.next
+            if l1:
+                current.next = l1
+            if l2:
+                current.next = l2
+            return dummy.next
+        
+        # 找到中间节点并分割链表
+        mid = find_mid(head)
+        right = mid.next
+        mid.next = None
+        left = head
+        
+        # 递归排序
+        left = self.sortList(left)
+        right = self.sortList(right)
+        
+        # 合并排序后的子链表
+        return merge(left, right)
+```
+### [146. LRU 缓存](https://leetcode.cn/problems/lru-cache/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+请你设计并实现一个满足  [LRU (最近最少使用) 缓存](https://baike.baidu.com/item/LRU) 约束的数据结构。
 
+实现 `LRUCache` 类：
+
+- `LRUCache(int capacity)` 以 **正整数** 作为容量 `capacity` 初始化 LRU 缓存
+- `int get(int key)` 如果关键字 `key` 存在于缓存中，则返回关键字的值，否则返回 `-1` 。
+- `void put(int key, int value)` 如果关键字 `key` 已经存在，则变更其数据值 `value` ；如果不存在，则向缓存中插入该组 `key-value` 。如果插入操作导致关键字数量超过 `capacity` ，则应该 **逐出** 最久未使用的关键字。
+
+函数 `get` 和 `put` 必须以 `O(1)` 的平均时间复杂度运行。
+
+示例：
+
+```
+输入
+["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]
+[[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]
+
+输出
+[null, null, null, 1, null, -1, null, -1, 3, 4]
+
+解释
+LRUCache lRUCache = new LRUCache(2);
+lRUCache.put(1, 1); // 缓存是 {1=1}
+lRUCache.put(2, 2); // 缓存是 {1=1, 2=2}
+lRUCache.get(1);    // 返回 1
+lRUCache.put(3, 3); // 该操作会使得关键字 2 作废，缓存是 {1=1, 3=3}
+lRUCache.get(2);    // 返回 -1 (未找到)
+lRUCache.put(4, 4); // 该操作会使得关键字 1 作废，缓存是 {4=4, 3=3}
+lRUCache.get(1);    // 返回 -1 (未找到)
+lRUCache.get(3);    // 返回 3
+lRUCache.get(4);    // 返回 4
+```
 #### 核心思路
+```
+LRU（最近最少使用）缓存是一种常见的缓存策略，用于管理有限的内存资源。当缓存满时，它会优先淘汰最近最少使用的数据项。这个题目要求你设计一个数据结构来实现 LRUCache 类，该类需要支持 get 和 put 操作，并且这些操作的时间复杂度都是 O(1)。
 
+1. 双向链表 + 哈希表    
+    - 双向链表：用于维护缓存中的键值对顺序，最近使用的节点放在链表的头部，最久未使用的节点放在链表的尾部。
+    - 哈希表：用于快速查找节点，哈希表的键是缓存的键，值是对应的链表节点。
+
+2. 操作细节
+    - get 操作：
+        - 如果键存在，返回对应的值，并将该节点移动到链表的头部（表示最近使用）。
+        - 如果键不存在，返回 -1。
+    - put 操作：
+        - 如果键已存在，更新其值，并将该节点移动到链表的头部。
+        - 如果键不存在，插入新的键值对到链表的头部。
+        - 如果插入后缓存超过容量，移除链表尾部的节点（最久未使用的节点）。
+```
 #### 代码
+```python
+class LRUCache:
+    def __init__(self, capacity: int):
+        # 使用 OrderedDict 来维护键值对的顺序
+        self.data = OrderedDict()
+        # 初始化缓存的容量
+        self.capacity = capacity
+
+    def get(self, key: int) -> int:
+        # 如果键存在于缓存中
+        if key in self.data:
+            # 将该键值对移动到有序字典的末尾（表示最近使用）
+            self.data.move_to_end(key)
+            # 返回对应的值
+            return self.data[key]
+        # 如果键不存在于缓存中，返回 -1
+        return -1
+
+    def put(self, key: int, value: int) -> None:
+        # 如果键已经存在于缓存中
+        if key in self.data:
+            # 更新该键的值
+            self.data[key] = value
+        else:
+            # 如果缓存已满
+            if len(self.data) >= self.capacity:
+                # 移除最久未使用的键值对（有序字典的头部）
+                self.data.popitem(last=False)
+            # 插入新的键值对
+            self.data[key] = value
+        # 将该键值对移动到有序字典的末尾（表示最近使用）
+        self.data.move_to_end(key)
+```
 #### 题目描述
 
 #### 核心思路
