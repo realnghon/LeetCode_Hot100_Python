@@ -580,21 +580,37 @@ class Solution:
 #### 代码
 ```python
 class Solution:
-    def sortedArrayToBST(self, nums: List[int]) -> Optional[TreeNode]:
-        # 辅助函数，将子数组转换为BST
+    def sortedArrayToBST(self, nums: List[int]) -> Optional[TreeNode]:
+        """
+        将排序数组转换为高度平衡的二叉搜索树。
+        
+        :param nums: 排序数组
+        :return: 二叉搜索树的根节点
+        """
         def helper(left: int, right: int) -> Optional[TreeNode]:
+            """
+            辅助函数，递归地将子数组转换为BST。
+            
+            :param left: 子数组的左边界
+            :param right: 子数组的右边界
+            :return: 当前子数组对应的BST的根节点
+            """
             if left > right:
-                return None
+                return None  # 如果左边界大于右边界，返回None，表示当前子数组为空
+            
             # 选择中间元素作为根节点
             mid = (left + right) // 2
             root = TreeNode(nums[mid])
+            
             # 递归构建左子树和右子树
             root.left = helper(left, mid - 1)
             root.right = helper(mid + 1, right)
-            return root        
+            
+            return root
+        
+        # 从整个数组开始递归构建BST
         return helper(0, len(nums) - 1)
 ```
-
 
 ### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position/description/?envType=study-plan-v2&envId=top-100-liked)
 

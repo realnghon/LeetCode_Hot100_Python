@@ -1324,46 +1324,462 @@ class LRUCache:
         # 将该键值对移动到有序字典的末尾（表示最近使用）
         self.data.move_to_end(key)
 ```
+### [102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你二叉树的根节点 `root` ，返回其节点值的 **层序遍历** 。 （即逐层地，从左到右访问所有节点）。
 
+示例：
+![](https://assets.leetcode.com/uploads/2021/02/19/tree1.jpg)
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[3],[9,20],[15,7]]
+```
 #### 核心思路
+```
+1. 初始化： 
+    - 创建一个结果列表 result，用于存储每一层的节点值。
+    - 创建一个双端队列 queue，并将根节点加入队列。
 
+2. 遍历队列：
+    - 当队列不为空时，进行以下步骤：
+        - 记录当前层的节点数 level_size。
+        - 创建一个空列表 current_level，用于存储当前层的节点值。
+        - 遍历当前层的所有节点：
+            - 从队列中取出一个节点 node。
+            - 将 node 的值加入 current_level。
+            - 如果 node 有左子节点，将左子节点加入队列。
+            - 如果 node 有右子节点，将右子节点加入队列。
+        - 将 current_level 加入 result。
+
+3. 返回结果：
+    - 遍历结束后，返回 result。
+```
 #### 代码
+```python
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        if not root:
+            return []  # 如果根节点为空，直接返回空列表
+        
+        result = []  # 用于存储最终的层序遍历结果
+        queue = deque([root])  # 初始化队列，将根节点加入队列
+        
+        while queue:
+            level_size = len(queue)  # 记录当前层的节点数
+            current_level = []  # 用于存储当前层的节点值
+            
+            for _ in range(level_size):
+                node = queue.popleft()  # 从队列中取出一个节点
+                current_level.append(node.val)  # 将节点值加入当前层的列表
+                
+                if node.left:
+                    queue.append(node.left)  # 如果节点有左子节点，将左子节点加入队列
+                if node.right:
+                    queue.append(node.right)  # 如果节点有右子节点，将右子节点加入队列
+            
+            result.append(current_level)  # 将当前层的节点值列表加入结果列表
+        
+        return result  # 返回最终的层序遍历结果
+```
+### [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个二叉树的根节点 `root` ，判断其是否是一个有效的二叉搜索树。
 
+**有效** 二叉搜索树定义如下：
+
+- 节点的左子树只包含 **小于** 当前节点的数。
+- 节点的右子树只包含 **大于** 当前节点的数。
+- 所有左子树和右子树自身必须也是二叉搜索树。
+
+示例：
+![](https://assets.leetcode.com/uploads/2020/12/01/tree1.jpg)
+```
+输入：root = [2,1,3]
+输出：true
+```
 #### 核心思路
+```
+验证一个二叉树是否为二叉搜索树（BST）的关键在于确保每个节点的值都在一个特定的范围内。具体来说：
+	- 对于每个节点，其左子树的所有节点值必须小于该节点的值。
+	- 对于每个节点，其右子树的所有节点值必须大于该节点的值。
 
+可以通过递归的方法来实现这一点，同时传递一个范围给每个递归调用，确保当前节点的值在这个范围内。
+
+1. 定义一个辅助函数：
+	- isValidBST，它接受三个参数：当前节点 node、当前节点值的下限 min_val 和上限 max_val。
+
+2. 递归终止条件：
+    - 如果当前节点为空，返回 True，因为空树是有效的BST。
+    - 如果当前节点的值不在 min_val 和 max_val 之间，返回 False。
+
+3. 递归调用：
+    - 递归检查左子树，左子树的值必须小于当前节点的值，所以传递 min_val 和 node.val 作为新的范围。
+    - 递归检查右子树，右子树的值必须大于当前节点的值，所以传递 node.val 和 max_val 作为新的范围。
+
+4. **返回结果**：只有当左右子树都是有效的BST时，当前节点才是有效的BST。
+```
 #### 代码
+```python
+class Solution:
+	def isValidBST(root: TreeNode) -> bool:
+	    def helper(node, min_val=float('-inf'), max_val=float('inf')):
+	        # 如果当前节点为空，返回 True，因为空树是有效的BST
+	        if not node:
+	            return True
+	        
+	        # 检查当前节点的值是否在指定的范围内
+	        if not (min_val < node.val < max_val):
+	            return False
+	        
+	        # 递归检查左子树
+	        # 左子树的所有节点值必须小于当前节点的值
+	        left_valid = helper(node.left, min_val, node.val)
+	        
+	        # 递归检查右子树
+	        # 右子树的所有节点值必须大于当前节点的值
+	        right_valid = helper(node.right, node.val, max_val)
+	        
+	        # 只有当左右子树都满足条件时，当前节点才是有效的BST
+	        return left_valid and right_valid
+	    
+	    # 初始调用，范围是负无穷到正无穷
+	    return helper(root)
+```
+### [230. 二叉搜索树中第 K 小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个二叉搜索树的根节点 `root` ，和一个整数 `k` ，请你设计一个算法查找其中第 `k` 小的元素（从 1 开始计数）。
 
+示例：
+![](https://assets.leetcode.com/uploads/2021/01/28/kthtree1.jpg)
+```
+输入：root = [3,1,4,null,2], k = 1
+输出：1
+```
 #### 核心思路
+```
+在二叉搜索树（BST）中，左子树的所有节点值都小于根节点的值，右子树的所有节点值都大于根节点的值。利用这一性质，可以通过中序遍历来按升序访问所有节点。
 
+1. 中序遍历：中序遍历二叉搜索树会得到一个有序列表（从小到大）。
+2. 提前终止：在遍历到第 k 个节点时，可以直接返回该节点的值，而不需要遍历完整棵树。
+```
 #### 代码
+```python
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        stack = []
+        current = root
+        
+        while current or stack:
+            # 先遍历左子树，将所有左子节点压入栈中
+            while current:
+                stack.append(current)
+                current = current.left
+            
+            # 从栈中弹出一个节点，访问该节点
+            current = stack.pop()
+            k -= 1  # 每访问一个节点，k 减 1
+            
+            # 如果 k 为 0，说明当前节点是第 k 小的元素，直接返回
+            if k == 0:
+                return current.val
+            
+            # 继续遍历右子树
+            current = current.right
+```
+### [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个二叉树的 **根节点** `root`，想象自己站在它的右侧，按照从顶部到底部的顺序，返回从右侧所能看到的节点值。
 
+示例：
+![](https://assets.leetcode.com/uploads/2021/02/14/tree.jpg)
+```
+输入：[1,2,3,null,5,null,4]
+输出：[1,3,4]
+```
 #### 核心思路
+```
+我们需要逐层遍历二叉树，记录每层最右侧的节点，在每一层中，我们只关心最右侧的节点。
 
+1. 初始化：
+    - 创建一个队列，将根节点加入队列。
+    - 创建一个结果列表，用于存储从右侧看到的节点值。
+
+2. 层次遍历：
+    - 使用一个 while 循环，只要队列不为空，就继续处理。
+    - 在每次循环开始时，记录当前队列的长度，这个长度表示当前层的节点数。
+
+3. 处理当前层：
+    - 使用一个 for 循环，遍历当前层的所有节点。
+    - 在每次迭代中，从队列中取出一个节点。
+    - 如果是当前层的最后一个节点，将其值加入结果列表。
+    - 将当前节点的左子节点和右子节点依次加入队列。
+
+4. 返回结果：
+    - 最终，结果列表中存储的就是从右侧看到的节点值。
+```
 #### 代码
+```python
+class Solution:
+    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+        if not root:
+            return []  # 如果根节点为空，返回空列表
+        
+        result = []  # 用于存储从右侧看到的节点值
+        queue = deque([root])  # 初始化队列，将根节点加入队列
+        
+        while queue:
+            # 当前层的节点数
+            level_length = len(queue)
+            
+            for i in range(level_length):
+                # 从队列中取出一个节点
+                node = queue.popleft()
+                
+                # 如果是当前层的最后一个节点，将其值加入结果列表
+                if i == level_length - 1:
+                    result.append(node.val)
+                
+                # 将当前节点的子节点加入队列
+                if node.left:
+                    queue.append(node.left)
+                if node.right:
+                    queue.append(node.right)
+        
+        return result  # 返回从右侧看到的节点值
+```
+### [114. 二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你二叉树的根结点 `root` ，请你将它展开为一个单链表：
+- 展开后的单链表应该同样使用 `TreeNode` ，其中 `right` 子指针指向链表中下一个结点，而左子指针始终为 `null` 。
+- 展开后的单链表应该与二叉树 [**先序遍历**](https://baike.baidu.com/item/%E5%85%88%E5%BA%8F%E9%81%8D%E5%8E%86/6442839?fr=aladdin) 顺序相同。
 
+示例：
+![](https://assets.leetcode.com/uploads/2021/01/14/flaten.jpg)
+```
+输入：root = [1,2,5,3,4,null,6]
+输出：[1,null,2,null,3,null,4,null,5,null,6]
+```
 #### 核心思路
+```
+将二叉树展开为单链表的问题可以通过递归或迭代的方法来解决。最优的解题思路通常是利用后序遍历的思想，因为我们需要先处理子节点再处理父节点。
 
+1. 后序遍历：由于我们需要先处理子节点再处理父节点，所以使用后序遍历（左-右-根）的思想。
+2. 调整指针：在遍历过程中，将当前节点的右子树接到左子树的最右节点的右子树上，然后将左子树变为右子树，左子树置为空。
+3. 递归调用：对每个节点都进行上述操作，直到遍历完整棵树。
+```
 #### 代码
+```python
+class Solution:
+    def flatten(self, root: Optional[TreeNode]) -> None:
+        if not root:
+            return
+        
+        # 先递归展开左右子树
+        self.flatten(root.left)
+        self.flatten(root.right)
+        
+        # 如果有左子树
+        if root.left:
+            # 保存当前的右子树
+            right_subtree = root.right
+            
+            # 将左子树移动到右子树的位置
+            root.right = root.left
+            root.left = None  # 清空左子树
+            
+            # 找到右子树的最右节点
+            current = root
+            while current.right:
+                current = current.right
+            
+            # 将保存的原右子树接到最右节点
+            current.right = right_subtree
+```
+### [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定两个整数数组 `preorder` 和 `inorder` ，其中 `preorder` 是二叉树的**先序遍历**， `inorder` 是同一棵树的**中序遍历**，请构造二叉树并返回其根节点。
 
+示例：
+
+![](https://assets.leetcode.com/uploads/2021/02/19/tree.jpg)
+
+```
+输入：preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+输出：[3,9,20,null,null,15,7]
+```
 #### 核心思路
+```
+理解先序和中序遍历的特点：
+    - 先序遍历的第一个元素是树的根节点。
+    - 中序遍历中，根节点左边的部分是左子树，右边的部分是右子树。
 
+递归构建二叉树：
+    - 使用先序遍历的第一个元素创建根节点。
+    - 在中序遍历中找到这个根节点的位置，这样可以确定左子树和右子树的范围。
+    - 递归地构建左子树和右子树。
+
+具体实现：    
+    - 定义一个递归函数 buildTree，该函数接受先序遍历和中序遍历的子数组范围作为参数。
+    - 在每次递归调用中，使用先序遍历的第一个元素创建根节点，并在中序遍历中找到该根节点的位置。
+    - 根据根节点的位置，划分出左子树和右子树的范围，并递归构建左子树和右子树。
+```
 #### 代码
+```python
+class Solution:
+    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:
+        # 如果输入的先序或中序遍历为空，则返回 None
+        if not preorder or not inorder:
+            return None
+        
+        # 先序遍历的第一个元素是根节点
+        root_val = preorder[0]
+        root = TreeNode(root_val)
+        
+        # 在中序遍历中找到根节点的位置
+        root_index = inorder.index(root_val)
+        
+        # 递归构建左子树
+        # 先序遍历中，根节点后的前 `root_index` 个元素是左子树的先序遍历
+        # 中序遍历中，根节点前的 `root_index` 个元素是左子树的中序遍历
+        root.left = self.buildTree(preorder[1:1 + root_index], inorder[:root_index])
+        
+        # 递归构建右子树
+        # 先序遍历中，从 `1 + root_index` 到末尾的元素是右子树的先序遍历
+        # 中序遍历中，从 `root_index + 1` 到末尾的元素是右子树的中序遍历
+        root.right = self.buildTree(preorder[1 + root_index:], inorder[root_index + 1:])
+        
+        # 返回构建的根节点
+        return root
+```
+### [437. 路径总和 III](https://leetcode.cn/problems/path-sum-iii/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个二叉树的根节点 `root` ，和一个整数 `targetSum` ，求该二叉树里节点值之和等于 `targetSum` 的 **路径** 的数目。
 
+**路径** 不需要从根节点开始，也不需要在叶子节点结束，但是路径方向必须是向下的（只能从父节点到子节点）。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2021/04/09/pathsum3-1-tree.jpg)
+
+```
+输入：root = [10,5,-3,3,2,null,11,3,-2,null,1], targetSum = 8
+输出：3
+解释：和等于 8 的路径有 3 条，如图所示。
+```
 #### 核心思路
+```
+这个问题可以使用递归结合前缀和的方式来求解。下面是详细步骤：
 
+1. 前缀和的概念：
+	- 前缀和是指从树的根节点到当前节点的路径上的所有节点的值之和。
+	- 我们使用一个哈希表（字典）来记录遍历过程中所有前缀和出现的次数。通过计算前缀和，我们可以快速查找某段路径的和是否等于 targetSum。
+
+2. 核心思路：
+	- 遍历树时，我们要检查以当前节点为终点，有没有一条路径的和等于 targetSum。
+	- 我们可以通过计算当前路径和 currSum，再检查哈希表中是否有一个前缀和（即 currSum - targetSum）存在。
+	- 如果存在，说明从该前缀和之后的部分路径，其和就是 targetSum。
+
+3. 具体步骤
+	- 用一个递归函数遍历二叉树，每到一个节点：
+	    1. 计算当前节点到根节点的路径和 currSum。
+	    2. 在哈希表中查找是否有 currSum - targetSum 的前缀和，存在说明从某段路径和等于 targetSum。
+	    4. 将当前路径和 currSum 加入哈希表，并将其出现次数增加1。
+	    5. 递归地遍历该节点的左子树和右子树。
+	    6. 返回时，将哈希表中当前路径和 currSum 的计数减1，避免影响其他路径。
+```
 #### 代码
+```python
+class Solution:
+    def pathSum(self, root: Optional[TreeNode], targetSum: int) -> int:
+        def dfs(node, currSum):
+            if not node:
+                return 0
+            
+            # 更新当前路径和
+            currSum += node.val
+            
+            # 计算从某个祖先节点到当前节点的路径和是否等于 targetSum
+            # 即 (currSum - targetSum) 是否在 prefix_sum_count 中存在
+            count = prefix_sum_count.get(currSum - targetSum, 0)
+            
+            # 更新前缀和字典，记录当前路径和出现的次数
+            prefix_sum_count[currSum] = prefix_sum_count.get(currSum, 0) + 1
+            
+            # 递归遍历左子树和右子树
+            count += dfs(node.left, currSum)
+            count += dfs(node.right, currSum)
+            
+            # 回溯：移除当前节点对应的路径和，以便不影响其他分支的路径计数
+            prefix_sum_count[currSum] -= 1
+            
+            return count
+        
+        # 前缀和哈希表，记录每个路径和出现的次数
+        # 初始值为 {0: 1}，表示从根节点到当前节点的路径和为0的路径有一条（即空路径）
+        prefix_sum_count = {0: 1}
+        
+        return dfs(root, 0)
+```
+### [236. 二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
 
+[百度百科](https://baike.baidu.com/item/%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/8918834?fr=aladdin)中最近公共祖先的定义为：“对于有根树 T 的两个节点 p、q，最近公共祖先表示为一个节点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
+
+**示例 1：**
+
+![](https://assets.leetcode.com/uploads/2018/12/14/binarytree.png)
+
+```
+输入：root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+输出：3
+解释：节点 5 和节点 1 的最近公共祖先是节点 3 。
+```
 #### 核心思路
+```
+要找到二叉树中节点 p 和 q 的最近公共祖先（LCA）。有几个关键点：
+	1. 如果当前节点是 p 或 q，那么它就是一个祖先节点。
+	2. 如果 p 和 q 分别位于当前节点的左右子树，那么当前节点就是它们的最近公共祖先。
+	3. 如果两个节点都位于左子树或都位于右子树，则继续在对应子树中寻找。
 
+1. 递归基：  
+    - 如果当前节点是 None，直接返回 None；如果当前节点是 p 或 q，直接返回当前节点。
+    
+2. 递归查找左右子树：  
+    - 在左子树和右子树递归查找 p 和 q。
+    
+3. 返回结果： 
+    - 如果左右子树都找到值，说明 p 和 q 分别在左右子树，当前节点是最近公共祖先。
+    - 如果只有左子树找到结果，返回左子树结果。
+    - 如果只有右子树找到结果，返回右子树结果。
+```
 #### 代码
+```python
+class Solution:
+    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        
+        # 如果当前节点为空，说明已经到达叶子节点的底部，返回 None
+        # 如果当前节点是 p 或 q，说明我们找到了其中一个节点，返回当前节点
+        if not root or root == p or root == q:
+            return root
+        
+        # 在左子树中递归查找 p 和 q，返回在左子树中的结果
+        left = self.lowestCommonAncestor(root.left, p, q)
+        
+        # 在右子树中递归查找 p 和 q，返回在右子树中的结果
+        right = self.lowestCommonAncestor(root.right, p, q)
+        
+        # 如果左子树和右子树都找到了 p 或 q，那么当前节点 root 就是最近公共祖先
+        # 因为 p 和 q 分别在当前节点的左右子树中
+        if left and right:
+            return root
+        
+        # 如果只有左子树找到结果（right 为 None），说明 p 和 q 都在左子树中
+        # 返回左子树的结果
+        # 如果只有右子树找到结果（left 为 None），说明 p 和 q 都在右子树中
+        # 返回右子树的结果
+        return left if left else right
+```
 #### 题目描述
 
 #### 核心思路
