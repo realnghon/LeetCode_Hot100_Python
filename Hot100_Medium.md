@@ -1780,26 +1780,304 @@ class Solution:
         # 返回右子树的结果
         return left if left else right
 ```
+### [200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个由 `1`（陆地）和 `0`（水）组成的的二维网格，请你计算网格中岛屿的数量。
 
+岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+
+此外，你可以假设该网格的四条边均被水包围。
+
+示例：
+```
+输入：grid = [
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+]
+输出：1
+```
 #### 核心思路
+```
+使用DFS处理岛屿数量问题时更加直观和简洁。
 
+1. 遍历网格：我们需要遍历整个网格中的每一个单元格。
+2. 遇到陆地时：如果遇到一个值为 '1' 的单元格，表示这是一个岛屿的一部分。
+3. 标记岛屿：使用DFS从这个单元格开始，将所有与之相连的陆地标记为 '0'，以避免重复计数。
+4. 计数岛屿：每次启动DFS时，表示发现了一个新的岛屿，因此计数器加一。
+```
 #### 代码
+```python
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+        # 如果网格为空，直接返回0
+        if not grid:
+            return 0
+
+        # 获取网格的行数和列数
+        rows, cols = len(grid), len(grid[0])
+        count = 0
+
+        def dfs(r: int, c: int):
+            """
+            使用深度优先搜索 (DFS) 标记从 (r, c) 开始的所有相连的陆地。
+            """
+            # 检查边界条件，如果超出边界或者当前单元格是水，则返回
+            if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] == '0':
+                return
+            
+            # 将当前单元格标记为已访问（即变为 '0'）
+            grid[r][c] = '0'
+            
+            # 递归访问上下左右四个方向
+            dfs(r + 1, c)  # 下
+            dfs(r - 1, c)  # 上
+            dfs(r, c + 1)  # 右
+            dfs(r, c - 1)  # 左
+
+        # 遍历整个网格
+        for r in range(rows):
+            for c in range(cols):
+                # 如果当前单元格是陆地（'1'），则发现了一个新的岛屿
+                if grid[r][c] == '1':
+                    count += 1
+                    # 使用DFS标记整个岛屿
+                    dfs(r, c)
+
+        return count
+```
+### [994. 腐烂的橘子](https://leetcode.cn/problems/rotting-oranges/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+在给定的 `m x n` 网格 `grid` 中，每个单元格可以有以下三个值之一：
 
+- 值 `0` 代表空单元格；
+- 值 `1` 代表新鲜橘子；
+- 值 `2` 代表腐烂的橘子。
+
+每分钟，腐烂的橘子 **周围 4 个方向上相邻** 的新鲜橘子都会腐烂。
+
+返回直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回 `-1`。
+
+示例：
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2019/02/16/oranges.png)
+```
+输入：grid = [[2,1,1],[1,1,0],[0,1,1]]
+输出：4
+```
 #### 核心思路
+```
+这道题是一道经典的 “多源最短路径” 问题，可以通过广度优先搜索（BFS）来解决。
 
+1. 初始化队列：首先遍历整个网格，找到所有初始时腐烂的橘子，并将它们的位置加入到队列中。同时，统计新鲜橘子的数量。
+2. 广度优先搜索（BFS）：使用队列进行BFS，每次处理队列中的所有腐烂橘子，将它们周围的新鲜橘子变为腐烂橘子，并将新腐烂的橘子加入队列。每处理完一轮，时间增加1分钟。
+3. 检查结果：当队列为空时，检查是否还有新鲜橘子。如果没有新鲜橘子，返回经过的分钟数；如果有，返回-1。
+```
 #### 代码
+```python
+class Solution:
+    def orangesRotting(self, grid: List[List[int]]) -> int:
+        if not grid:
+            return -1
+
+        rows, cols = len(grid), len(grid[0])
+        fresh_count = 0
+        queue = deque()
+
+        # 初始化队列和新鲜橘子计数
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] == 2:
+                    queue.append((r, c))  # 将所有初始腐烂的橘子加入队列
+                elif grid[r][c] == 1:
+                    fresh_count += 1  # 统计新鲜橘子的数量
+
+        # 定义四个方向：上下左右
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        minutes_passed = 0  # 记录时间
+
+        # 广度优先搜索
+        while queue and fresh_count > 0:
+            minutes_passed += 1  # 每处理完一轮，时间增加1分钟
+            for _ in range(len(queue)):
+                r, c = queue.popleft()  # 从队列中取出一个腐烂的橘子
+                for dr, dc in directions:
+                    nr, nc = r + dr, c + dc  # 计算相邻的单元格位置
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                        # 如果相邻单元格是新鲜橘子，将其变为腐烂橘子
+                        grid[nr][nc] = 2
+                        fresh_count -= 1  # 新鲜橘子数量减少1
+                        queue.append((nr, nc))  # 将新腐烂的橘子加入队列
+
+        # 检查是否还有新鲜橘子
+        if fresh_count == 0:
+            return minutes_passed  # 如果没有新鲜橘子，返回经过的分钟数
+        else:
+            return -1  # 如果还有新鲜橘子，返回-1
+```
+### [207. 课程表](https://leetcode.cn/problems/course-schedule/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+你这个学期必须选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1` 。
 
+在选修某些课程之前需要一些先修课程。 先修课程按数组 `prerequisites` 给出，其中 `prerequisites[i] = [ai, bi]` ，表示如果要学习课程 `ai` 则 **必须** 先学习课程  `bi` 。
+
+- 例如，先修课程对 `[0, 1]` 表示：想要学习课程 `0` ，你需要先完成课程 `1` 。
+
+请你判断是否可能完成所有课程的学习？如果可以，返回 `true` ；否则，返回 `false` 。
+
+示例：
+```
+输入：numCourses = 2, prerequisites = [[1,0]]
+输出：true
+解释：总共有 2 门课程。学习课程 1 之前，你需要完成课程 0 。这是可能的。
+```
 #### 核心思路
+```
+这个问题的核心是判断是否有依赖冲突。你可以把课程想象成一系列任务，部分任务必须先完成其他任务才能开始。如果出现循环依赖，就意味着有些任务永远无法完成（例如任务 A 依赖任务 B，B 又依赖 A），所以问题的关键就是要检查这些循环依赖是否存在。
 
+1. 建立依赖关系：
+   - 假设有很多课程，每门课可能需要先修另一门课。我们可以用一个图来表示这些课程之间的依赖关系。
+   - 图中的每个节点就是一门课，边则表示“先修关系”（从一门课指向另一门先修课）。
+
+2. 找到没有依赖的课程：
+   - 如果一门课不需要任何先修课（没有依赖），我们可以直接开始学这门课。
+
+3. 依次完成这些课程：
+   - 我们先学完没有依赖的课程，然后看看哪些课程现在已经可以学了（它们之前依赖的课程已经完成了）。
+   - 依次重复这个过程，直到所有课程都学完，或者发现有些课程永远学不了（说明有循环依赖）。
+
+4. 检查是否有循环依赖：
+   - 如果我们可以把所有课程都顺利完成，那就没有循环依赖，可以学完所有课程。
+   - 如果有些课程永远无法学完，那就有循环依赖，无法完成所有课程。
+```
 #### 代码
+```python
+class Solution:
+    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+        # 1. 初始化邻接表和入度表
+        # 邻接表（graph）：记录每门课的后续课，即哪些课依赖于这门课
+        # 入度表（in_degree）：记录每门课有多少门前置课（依赖的课程）
+        graph = {i: [] for i in range(numCourses)}  # 每门课的后续课程列表
+        in_degree = {i: 0 for i in range(numCourses)}  # 每门课的前置课个数
+
+        # 2. 构建图结构和入度表
+        # 遍历所有的前置课程关系 [a, b]，表示要先学课程 b 再学课程 a
+        for course, prereq in prerequisites:
+            graph[prereq].append(course)  # 课程 b 指向课程 a，表示 a 依赖 b
+            in_degree[course] += 1  # 课程 a 的前置课程数加 1
+
+        # 3. 找到所有没有前置课程的课程（即入度为 0 的课程）
+        queue = deque([course for course in in_degree if in_degree[course] == 0])
+
+        # 记录已经学完的课程数量
+        completed_courses = 0
+
+        # 4. 进行广度优先搜索（BFS）
+        while queue:
+            current_course = queue.popleft()  # 从队列中取出一门可以学习的课程
+            completed_courses += 1  # 这门课算作已经学完
+
+            # 对这门课的后续课程进行处理
+            for next_course in graph[current_course]:
+                in_degree[next_course] -= 1  # 该后续课的前置课程少了一门
+                if in_degree[next_course] == 0:  # 如果该课的前置课程已经全部学完
+                    queue.append(next_course)  # 将其加入队列
+
+        # 5. 判断是否所有课程都学完了
+        return completed_courses == numCourses  # 如果已学完的课程数量等于总课程数，则返回 True
+```
+### [208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+**[Trie](https://baike.baidu.com/item/%E5%AD%97%E5%85%B8%E6%A0%91/9825209?fr=aladdin)**（发音类似 "try"）或者说 **前缀树** 是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。这一数据结构有相当多的应用情景，例如自动补全和拼写检查。
 
+请你实现 Trie 类：
+
+- `Trie()` 初始化前缀树对象。
+- `void insert(String word)` 向前缀树中插入字符串 `word` 。
+- `boolean search(String word)` 如果字符串 `word` 在前缀树中，返回 `true`（即，在检索之前已经插入）；否则，返回 `false` 。
+- `boolean startsWith(String prefix)` 如果之前已经插入的字符串 `word` 的前缀之一为 `prefix` ，返回 `true` ；否则，返回 `false` 。
+
+示例：
+```
+输入：
+["Trie", "insert", "search", "search", "startsWith", "insert", "search"]
+[[], ["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]]
+输出：
+[null, null, true, false, true, null, true]
+
+解释：
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");   // 返回 True
+trie.search("app");     // 返回 False
+trie.startsWith("app"); // 返回 True
+trie.insert("app");
+trie.search("app");     // 返回 True
+```
 #### 核心思路
+```
+1. Trie（字典树）简介：
+    - Trie 是一种树形结构，专门用于高效存储和查找字符串集合，常用于字典中的单词搜索。
+    - 每个节点代表一个字符，路径代表某个单词的前缀。
+    - 最常见的操作有插入一个单词、搜索某个单词是否存在、以及判断某个前缀是否存在。
 
+2. __init__ 方法： 
+    - 初始化字典树的根节点。用一个字典（dict）来存储，根节点是空字典 {}。
+
+3. insert 方法：
+    - 逐个字符插入到字典树中，从根节点开始。如果当前字符已经存在，则移动到下一节点；否则就创建一个新的字典节点。
+    - 在单词的最后一个字符插入后，添加一个特殊标记符（#），表示该节点代表一个完整单词的结束。
+
+4. search 方法：
+    - 用于搜索某个单词是否在 Trie 中存在。
+    - 逐个字符从根节点开始查找，如果某个字符不在节点中，直接返回 False，表示没有这个单词。
+    - 如果能遍历完整个单词，并且最后一个字符的节点有结束标记符（#），说明这个单词存在。
+
+5. startsWith 方法：
+    - 检查是否存在以某个前缀开头的单词。
+    - 逐个字符检查，如果当前字符在 Trie 中存在，就继续；否则返回 False，表示没有该前缀。
+    - 如果可以遍历完整个前缀，返回 True，表示存在这个前缀。
+```
 #### 代码
+```python
+class Trie:
+    def __init__(self):
+        # 初始化一个空的字典树根节点，根节点本身也是一个字典
+        self.root = {}
+
+    def insert(self, word: str) -> None:
+        # 从根节点开始逐个插入字符
+        node = self.root
+        for char in word:
+            # 如果当前字符不在当前节点中，添加这个字符
+            if char not in node:
+                node[char] = {}
+            node = node[char]
+        # 插入完成后，在末尾标记此位置为单词结束
+        node['#'] = True  # '#' 是结束标记符，表示这个路径为一个完整单词
+
+    def search(self, word: str) -> bool:
+        # 从根节点开始搜索字符
+        node = self.root
+        for char in word:
+            # 如果字符不在节点中，则表示字典树中不存在该单词
+            if char not in node:
+                return False
+            node = node[char]
+        # 判断最后的节点是否有单词结束标记
+        return '#' in node
+
+    def startsWith(self, prefix: str) -> bool:
+        # 从根节点开始逐个字符检查前缀
+        node = self.root
+        for char in prefix:
+            # 如果前缀中的字符不在字典树中，返回 False
+            if char not in node:
+                return False
+            node = node[char]
+        # 如果可以走完前缀，说明存在该前缀
+        return True
+```
 #### 题目描述
 
 #### 核心思路
