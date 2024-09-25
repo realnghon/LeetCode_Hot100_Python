@@ -2078,41 +2078,406 @@ class Trie:
         # 如果可以走完前缀，说明存在该前缀
         return True
 ```
+
+### [46. 全排列](https://leetcode.cn/problems/permutations/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个不含重复数字的数组 `nums` ，返回其 _所有可能的全排列_ 。你可以 **按任意顺序** 返回答案。
 
+示例：
+
+```
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
 #### 核心思路
+```
+回溯算法是用来解决组合、排列、子集等问题的有效方法。它通过在解的空间中一步步探索可能的解，试图找到符合要求的解集。如果发现某个路径不能达成目标，就回到上一步，尝试其他路径。
 
+1. 初始化：
+    - 首先，我们准备一个空的列表 result，用来存储所有符合条件的解，比如全排列。
+    - 还需要一个 path 列表，用来存储当前路径上的元素（即正在构造的一个解）。
+
+2. 递归函数（backtrack）：
+    - 这是回溯算法的核心。它负责一步步地往下探索并做出选择。
+    - 终止条件： 当 path 的长度等于原数组的长度时（就是已经用完了所有元素），说明我们找到了一个完整的解。这时就把 path 加入 result。
+    - 选择与递归：    
+        - 在每一步，我们从剩余的候选元素（比如原数组的未使用元素）中选一个，放到 path 中。
+        - 然后递归调用 backtrack，继续从剩下的元素中选择。
+    - 回溯操作：  
+        - 当递归返回后（说明已经完成了当前路径的探索），我们要把刚才添加的元素从 path 中移除，回到上一步。这样可以进行下一次选择。
+
+3. 调用递归函数：
+    - 初始调用时，path 是空的，剩余的候选元素就是输入的数组。递归会一步步填满 path，直到找到所有可能的排列。
+
+5. 返回结果：
+    - 最后返回 result，它包含了所有符合条件的解。
+```
 #### 代码
+【回溯解法】
+```python
+class Solution:
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        def backtrack(path, remaining):
+            # 当剩余元素为空时，说明已经生成了一个完整的排列
+            if not remaining:
+                result.append(path[:])  # 将当前路径的副本添加到结果中（使用 path[:] 防止引用问题）
+                return
+            # 遍历剩余的每一个元素，尝试将其加入当前排列路径
+            for i in range(len(remaining)):
+                # 选择：将 remaining[i] 添加到路径中
+                path.append(remaining[i])
+                # 递归：将元素 i 从剩余元素中移除，继续生成剩下的排列
+                # remaining[:i] + remaining[i+1:] 表示除了第 i 个元素的其余元素
+                backtrack(path, remaining[:i] + remaining[i+1:])
+                # 回溯：撤销选择，将刚加入的元素从路径中移除，尝试其他选择
+                path.pop()
+
+        result = []  # 存储所有生成的排列结果
+        backtrack([], nums)  # 初始时路径为空，剩余元素为 nums
+        return result  # 返回所有排列结果
+```
+【暴力递归解法】
+```python
+class Solution:
+    def permute(self, nums):
+        # 如果数组为空，返回一个空列表
+        if len(nums) == 0:
+            return []
+        # 如果数组只有一个元素，返回它自己
+        if len(nums) == 1:
+            return [nums]
+            
+        result = []        
+        # 遍历数组中的每一个元素
+        for i in range(len(nums)):
+            # 当前选择的元素
+            current = nums[i]
+            # 剩余的元素（除了当前元素之外的部分）
+            remaining = nums[:i] + nums[i+1:]
+            
+            # 对剩余元素递归生成所有排列
+            for p in self.permute(remaining):
+                # 将当前元素加入到递归生成的排列前面
+                result.append([current] + p)
+        
+        return result
+```
+### [78. 子集](https://leetcode.cn/problems/subsets/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个整数数组 `nums` ，数组中的元素 **互不相同** 。返回该数组所有可能的子集（幂集）。
 
+解集 **不能** 包含重复的子集。你可以按 **任意顺序** 返回解集。
+
+示例：
+```
+输入：nums = [1,2,3]
+输出：[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+```
 #### 核心思路
+```
+使用了迭代的方法来生成一个数组的所有子集。具体来说，通过逐步扩展当前已有的子集来生成新的子集。
 
+1. 初始化结果列表： 
+	- 初始化结果列表 result，其中包含一个空子集。这是因为在任何数组的子集中，空集总是存在的。
+
+2. 遍历每个元素：    
+    - 遍历输入数组 nums 中的每个元素 num。对于每个元素，我们都会生成新的子集并将其添加到结果列表中。
+
+3. 生成新的子集：
+	- 对于当前结果列表 result 中的每个子集 subset，生成一个新的子集，该子集是在原子集的基础上加上当前元素 num。
+    - 将新生成的子集直接添加到结果列表 result 中。extend 方法会将可迭代对象中的所有元素添加到列表的末尾。
+
+4. 返回结果：
+	- 返回包含所有子集的结果列表 result。
+```
 #### 代码
+```python
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        result = [[]]
+        
+        # 遍历 nums 数组中的每个元素
+        for num in nums:
+            # 使用列表推导式生成新的子集并直接添加到结果集中
+            result.extend(subset + [num] for subset in result)
+        
+        return result
+```
+### [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
 
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/11/09/200px-telephone-keypad2svg.png)
+示例：
+```
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
 #### 核心思路
+```
+这个问题的核心是将数字和字母映射，根据给定的数字字符串生成所有可能的字母组合。
 
+1. 映射关系：首先，将每个数字映射到对应的字母，类似于手机键盘上的按键。
+
+2. 组合构建：从给定的数字字符串中的每个数字开始，逐步构建字母组合。每次处理一个数字时，将这个数字对应的所有字母依次加到已经生成的所有组合的末尾。
+
+3. 迭代更新：初始时，组合是空的 ['']，然后遍历每个数字，逐步构建新的组合，直到所有数字都被处理完。每处理一个数字，结果集就会扩展，加入所有可能的新组合。
+
+4. 最终结果：当所有数字都处理完后，生成的列表就是所有可能的字母组合。
+```
 #### 代码
+```python
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        if not digits:
+            return []
+        
+        digit_to_letters = {
+            '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+            '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+        }
+        
+        result = ['']
+        
+        for digit in digits:
+            # 重新构建结果列表，每个结果加上当前数字对应的字母
+            new_result = []
+            for letter in digit_to_letters[digit]:
+                for combination in result:
+                    new_result.append(combination + letter)
+            result = new_result
+        
+        return result
+```
+### [39. 组合总和](https://leetcode.cn/problems/combination-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个 **无重复元素** 的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的 所有 **不同组合** ，并以列表形式返回。你可以按 **任意顺序** 返回这些组合。
 
+`candidates` 中的 **同一个** 数字可以 **无限制重复被选取** 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 `target` 的不同组合数少于 `150` 个。
+
+示例：
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
 #### 核心思路
+```
+通过递归不断尝试所有可能的组合，最终找到那些和等于目标数的组合。
 
+1. 递归探索：从数组 candidates 中选择一个元素开始尝试，不断向当前组合中添加元素，直到总和等于目标数 target。如果总和超过目标数，就回退（回溯）。
+    
+2. 剪枝优化：为了避免重复计算，每次递归时，我们只考虑当前元素及其之后的元素（避免重复组合）。
+    
+3. 重复选择元素：因为题目允许一个数字可以被无限制重复使用，因此递归时可以再次选择当前元素。
+```
 #### 代码
+```python
+class Solution:
+    def combinationSum(self, candidates, target):
+        result = []
+        
+        # 回溯函数，参数分别是当前组合路径、当前的总和、候选元素的起始索引
+        def backtrack(remaining, path, start):
+            # 如果剩余的数为 0，说明找到了一组合法的组合，加入结果集
+            if remaining == 0:
+                result.append(path[:])
+                return
+            # 如果剩余数小于 0，说明当前组合不合法，直接返回
+            if remaining < 0:
+                return
+            
+            # 从当前元素开始，尝试每个候选元素
+            for i in range(start, len(candidates)):
+                # 选择当前元素，递归搜索
+                path.append(candidates[i])
+                # 递归调用，remaining 减去当前元素，start 保持不变以允许重复选择同一元素
+                backtrack(remaining - candidates[i], path, i)
+                # 回溯：撤销当前选择
+                path.pop()
+        
+        # 调用回溯函数，初始路径为空，目标是 target，从第 0 个元素开始
+        backtrack(target, [], 0)
+        
+        return result
+```
+### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
 
+示例：
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
 #### 核心思路
+```
+1. 条件判断：
+    - 有效的括号 有两个关键条件：
+        1. 左括号的数量不能超过 n，即在递归过程中，我们不能放置超过 n 个左括号。
+        2. 右括号的数量不能超过已经放置的左括号数量，保证当前组合是有效的。
 
+2. 递归终止条件：    
+    - 当生成的字符串的长度等于 2 * n，说明所有括号对都放置完毕，我们将当前生成的字符串加入结果列表中。
+
+3. 回溯过程：
+    - 每次递归时，我们有两个选择：
+        1. 如果左括号还没放满（left < n），我们可以放一个左括号 '('。
+        2. 如果右括号数量小于左括号（right < left），可以放一个右括号 ')'。
+    - 放置一个括号后，继续递归构建剩下的组合；一旦递归完成后，回溯到之前的状态，尝试其他可能。
+```
 #### 代码
+```python
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        def backtrack(path, left, right):
+            # 如果生成的括号长度达到了 2 * n，说明所有括号对已经放置完毕
+            if len(path) == 2 * n:
+                result.append("".join(path))  # 将生成的括号组合加入结果列表
+                return
+
+            # 如果左括号数量还没有达到 n，继续放置左括号
+            if left < n:
+                path.append('(')  # 放置左括号
+                backtrack(path, left + 1, right)  # 递归
+                path.pop()  # 回溯，撤销放置的左括号
+            
+            # 如果右括号数量小于左括号数量，继续放置右括号
+            if right < left:
+                path.append(')')  # 放置右括号
+                backtrack(path, left, right + 1)  # 递归
+                path.pop()  # 回溯，撤销放置的右括号
+
+        result = []
+        backtrack([], 0, 0)  # 初始状态：空路径，0 左括号，0 右括号
+        return result
+```
+### [79. 单词搜索](https://leetcode.cn/problems/word-search/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个 `m x n` 二维字符网格 `board` 和一个字符串单词 `word` 。如果 `word` 存在于网格中，返回 `true` ；否则，返回 `false` 。
 
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+示例：
+![](https://assets.leetcode.com/uploads/2020/11/04/word2.jpg)
+```
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"
+输出：true
+```
 #### 核心思路
-
+```
+1. 搜索起点：
+    - 从网格中的每个位置作为起点，尝试查找单词的第一个字母。
+2. 递归查找：
+    - 从匹配到的第一个字母开始，递归地查找下一个字母。
+    - 每个递归步骤中，我们会尝试向四个方向（上下左右）移动，寻找下一个字母。
+3. 回溯：  
+    - 如果找到匹配的单词，返回 true。
+    - 如果当前路径无法匹配到单词，回溯并尝试其他可能的路径。
+4. 终止条件：
+    - 如果匹配到了单词的所有字母，返回 true。
+    - 如果当前字符不匹配或越界，则停止当前路径的搜索。
+```
 #### 代码
+```python
+class Solution:
+    def exist(self, board: List[List[str]], word: str) -> bool:
+        rows, cols = len(board), len(board[0])
+        
+        # 定义回溯函数，参数为当前搜索的行、列以及当前匹配到的字符索引
+        def backtrack(r, c, index):
+            if index == len(word):
+                return True
+            
+            # 如果越界，或者当前单元格的字符不匹配，返回 False
+            if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != word[index]:
+                return False
+            
+            # 暂时标记这个单元格为已访问，避免重复使用
+            temp, board[r][c] = board[r][c], '#'
+            
+            # 四个方向进行探索：上、下、左、右
+            found = (
+                backtrack(r + 1, c, index + 1) or  # 向下
+                backtrack(r - 1, c, index + 1) or  # 向上
+                backtrack(r, c + 1, index + 1) or  # 向右
+                backtrack(r, c - 1, index + 1)     # 向左
+            )
+            
+            # 回溯：恢复当前单元格的值
+            board[r][c] = temp
+            
+            return found
+        
+        # 遍历每一个网格中的位置，尝试寻找单词的第一个字母
+        for i in range(rows):
+            for j in range(cols):
+                # 如果从某个位置找到了单词，直接返回 True
+                if backtrack(i, j, 0):
+                    return True
+        
+        # 如果遍历完所有的起点都没有找到，返回 False
+        return False
+```
+### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个字符串 `s`，请你将 `s` 分割成一些子串，使每个子串都是 **回文串** 。返回 `s` 所有可能的分割方案。
 
+示例：
+```
+输入：s = "aab"
+输出：[["a","a","b"],["aa","b"]]
+```
 #### 核心思路
+```
+1. 选择分割点：
+    - 从字符串的起始位置开始，每次选择一个分割点，将字符串分割成一个前缀（子串）和剩余的部分。
+    - 检查前缀是否是回文串，如果是，则递归处理剩余的部分。
+    
+2. 递归和回溯：
+    - 对于每个分割点，如果当前子串是回文串，则递归地处理剩余部分。
+    - 一旦递归到字符串的末尾，说明已经完成了一次有效的分割，将结果加入最终解集中。
+    - 回溯时，撤销上一步的选择，继续尝试新的分割方案。
 
+3. 回文检查：
+    - 使用一个辅助函数来判断一个字符串是否是回文。
+```
 #### 代码
+```python
+class Solution:
+    def partition(self, s: str) -> List[List[str]]:
+        def is_palindrome(sub: str) -> bool:
+            # 判断子串是否是回文
+            return sub == sub[::-1]
+        
+        def backtrack(start: int, path: List[str]):
+            # 递归终止条件：如果已经到达字符串末尾，表示完成了一次有效分割
+            if start == len(s):
+                result.append(path[:])
+                return
+            
+            # 尝试从 start 开始的每一个位置分割字符串
+            for end in range(start + 1, len(s) + 1):
+                # 获取当前子串 s[start:end]
+                substring = s[start:end]
+                
+                # 如果当前子串是回文，继续递归处理剩余部分
+                if is_palindrome(substring):
+                    path.append(substring)  # 选择当前子串
+                    backtrack(end, path)    # 递归处理剩余部分
+                    path.pop()              # 回溯，撤销选择
+        
+        result = []
+        backtrack(0, [])
+        return result
+```
 #### 题目描述
 
 #### 核心思路
