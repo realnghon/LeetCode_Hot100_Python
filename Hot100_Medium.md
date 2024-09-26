@@ -2478,26 +2478,225 @@ class Solution:
         backtrack(0, [])
         return result
 ```
+### [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个满足下述两条属性的 `m x n` 整数矩阵：
+- 每行中的整数从左到右按非严格递增顺序排列。
+- 每行的第一个整数大于前一行的最后一个整数。
 
+给你一个整数 `target` ，如果 `target` 在矩阵中，返回 `true` ；否则，返回 `false` 。
+
+示例：
+
+![](https://assets.leetcode.com/uploads/2020/10/05/mat.jpg)
+
+```
+输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+输出：true
+```
 #### 核心思路
+```
+从矩阵的右上角开始搜索，这样每一步都可以通过比较大小来确定下一步的方向。详细步骤如下：
 
+1. 从右上角开始：我们选择从矩阵的右上角（即第一行的最后一个元素）开始。这个位置有一个特殊的性质：
+    - 如果当前元素比目标值 target 大，我们可以往左移动，因为同一行左边的元素更小。
+    - 如果当前元素比目标值 target 小，我们可以向下移动，因为同一列下面的元素更大。
+
+2. 不断缩小搜索空间：根据上面的逻辑，我们每次都可以抛弃一整行或一整列，因此每次比较都有效地缩小了搜索范围。
+    
+3. 终止条件：如果找到了目标值，返回 True。如果搜索越界（即行列索引超出矩阵范围），则返回 False，表示未找到目标值。
+```
 #### 代码
+```python
+class Solution:
+    def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
+        # 获取矩阵的行数和列数
+        if not matrix or not matrix[0]:
+            return False
+        rows, cols = len(matrix), len(matrix[0])
+        
+        # 从右上角开始
+        row, col = 0, cols - 1
+        
+        while row < rows and col >= 0:
+            if matrix[row][col] == target:
+                return True
+            elif matrix[row][col] > target:
+                # 如果当前元素比目标大，向左移动
+                col -= 1
+            else:
+                # 如果当前元素比目标小，向下移动
+                row += 1
+        
+        return False
+```
+### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个按照非递减顺序排列的整数数组 `nums`，和一个目标值 `target`。请你找出给定目标值在数组中的开始位置和结束位置。
 
+如果数组中不存在目标值 `target`，返回 `[-1, -1]`。
+
+你必须设计并实现时间复杂度为 `O(log n)` 的算法解决此问题。
+
+示例：
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
 #### 核心思路
+```
+要实现时间复杂度为 O(log n) 的算法解决这个问题，可以使用二分查找。
+具体来说，我们需要两次二分查找：一次找到目标值的开始位置，另一次找到目标值的结束位置。
 
+1. 找到目标值的开始位置：
+	- 使用二分查找，但当找到目标值时，不立即返回，而是继续向左查找，直到找到最左边的目标值。
+
+2. 找到目标值的结束位置：
+	- 使用二分查找，但当找到目标值时，不立即返回，而是继续向右查找，直到找到最右边的目标值。
+
+3. 处理不存在目标值的情况：
+	- 如果在第一次查找中没有找到目标值，直接返回 [-1, -1]。
+```
 #### 代码
+```python
+class Solution:
+    def searchRange(nums, target):
+        def binary_search(nums, target, find_first):
+            left, right = 0, len(nums) - 1
+            result = -1
+            while left <= right:
+                mid = (left + right) // 2
+                if nums[mid] == target:
+                    result = mid
+                    if find_first:
+                        right = mid - 1  # 寻找左边界
+                    else:
+                        left = mid + 1   # 寻找右边界
+                elif nums[mid] < target:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+            return result
+
+        start = binary_search(nums, target, True)
+        end = binary_search(nums, target, False)
+
+        return [start, end] if start != -1 else [-1, -1]
+```
+### [33. 搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+整数数组 `nums` 按升序排列，数组中的值 **互不相同** 。
 
+在传递给函数之前，`nums` 在预先未知的某个下标 `k`（`0 <= k < nums.length`）上进行了 **旋转**，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 **从 0 开始** 计数）。例如， `[0,1,2,4,5,6,7]` 在下标 `3` 处经旋转后可能变为 `[4,5,6,7,0,1,2]` 。
+
+给你 **旋转后** 的数组 `nums` 和一个整数 `target` ，如果 `nums` 中存在这个目标值 `target` ，则返回它的下标，否则返回 `-1` 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+示例：
+```
+输入：nums = [4,5,6,7,0,1,2], target = 0
+输出：4
+```
 #### 核心思路
-
+```
+1. 初始化：定义两个指针 left 和 right 分别指向数组的起始和结束位置。
+2. 中间值：计算中间位置 mid。
+3. 比较：
+    - 如果 nums[mid] 等于 target，返回 mid。
+    - 如果 nums[left] 到 nums[mid] 是有序的：
+        - 检查 target 是否在这个有序区间内。
+        - 如果在，调整 right 指针；否则，调整 left 指针。
+    - 如果 nums[mid] 到 nums[right] 是有序的：
+        - 检查 target 是否在这个有序区间内。
+        - 如果在，调整 left 指针；否则，调整 right 指针。
+4. 循环：重复上述步骤，直到 left 超过 right。
+5. 返回结果：如果循环结束仍未找到 target，返回 -1。
+```
 #### 代码
+```python
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        left, right = 0, len(nums) - 1
+        
+        while left <= right:
+            mid = (left + right) // 2
+            
+            # 如果找到目标值，直接返回
+            if nums[mid] == target:
+                return mid
+            
+            # 判断左半部分是否有序
+            if nums[left] <= nums[mid]:
+                # 如果目标值在左半部分的有序区间中
+                if nums[left] <= target < nums[mid]:
+                    right = mid - 1  # 缩小右边界，继续在左半部分查找
+                else:
+                    left = mid + 1   # 否则，目标值可能在右半部分
+            # 否则右半部分有序
+            else:
+                # 如果目标值在右半部分的有序区间中
+                if nums[mid] < target <= nums[right]:
+                    left = mid + 1   # 缩小左边界，继续在右半部分查找
+                else:
+                    right = mid - 1  # 否则，目标值可能在左半部分
+        
+        return -1
+```
+### [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+已知一个长度为 `n` 的数组，预先按照升序排列，经由 `1` 到 `n` 次 **旋转** 后，得到输入数组。例如，原数组 `nums = [0,1,2,4,5,6,7]` 在变化后可能得到：
 
+- 若旋转 `4` 次，则可以得到 `[4,5,6,7,0,1,2]`
+- 若旋转 `7` 次，则可以得到 `[0,1,2,4,5,6,7]`
+
+注意，数组 `[a[0], a[1], a[2], ..., a[n-1]]` **旋转一次** 的结果为数组 `[a[n-1], a[0], a[1], a[2], ..., a[n-2]]` 。
+
+给你一个元素值 **互不相同** 的数组 `nums` ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 **最小元素** 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+示例：
+```
+输入：nums = [3,4,5,1,2]
+输出：1
+解释：原数组为 [1,2,3,4,5] ，旋转 3 次得到输入数组。
+```
 #### 核心思路
+```
+首先，假设原数组是严格递增的，并且经过了旋转，导致一部分数组无序。为了理解，我们需要明确 有序部分和 无序部分 的定义：
+	- 有序部分：在旋转后，仍然保持元素从小到大排列的区间。
+	- 无序部分：由于旋转导致其中部分元素的顺序被打乱的区间（即最小值所在的区间）。
 
+在旋转后的数组中，如果整个数组仍然是有序的（没有旋转或者旋转了完整长度），那么最小值就是数组的第一个元素。如果数组被旋转了，则会出现 无序部分，最小值一定出现在这个无序部分中。
+
+通过 中间元素 nums[mid] 和数组最右端元素 nums[right] 来判断：
+	1. nums[mid] > nums[right]：
+	    - 如果 mid 元素大于 right 元素，说明 mid 元素所在的区域是无序的。因为 nums[mid] 本应该小于 nums[right]，但由于旋转，顺序被破坏了。
+	    - 在这种情况下，最小元素一定在 mid 右边。这是因为 nums[mid] > nums[right]，所以在右边部分才有可能找到比 nums[right] 更小的元素。
+	2. nums[mid] < nums[right]：
+	    - 如果 mid 元素小于 right 元素，说明 mid 到 right 的这部分是有序的，也就是说，nums[mid] 是这一段中的最小值。
+	    - 在这种情况下，最小值可能在 mid 左边（包括 mid 本身）。因为右边已经有序，最小值不会在右边，而可能在左边。
+```
 #### 代码
+```python
+class Solution:
+    def findMin(self, nums: List[int]) -> int:
+        left, right = 0, len(nums) - 1
+
+        while left < right:
+            mid = (left + right) // 2
+
+            # 如果中间值大于最右边的值，说明最小值在右半部分
+            if nums[mid] > nums[right]:
+                left = mid + 1
+            # 否则，最小值在左半部分（包括 mid 自己）
+            else:
+                right = mid
+
+        # 当 left == right 时，找到了最小值
+        return nums[left]
+```
 #### 题目描述
 
 #### 核心思路
