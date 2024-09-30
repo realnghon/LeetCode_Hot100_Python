@@ -2697,31 +2697,297 @@ class Solution:
         # 当 left == right 时，找到了最小值
         return nums[left]
 ```
+### [155. 最小栈](https://leetcode.cn/problems/min-stack/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+设计一个支持 `push` ，`pop` ，`top` 操作，并能在常数时间内检索到最小元素的栈。
 
+实现 `MinStack` 类:
+
+- `MinStack()` 初始化堆栈对象。
+- `void push(int val)` 将元素val推入堆栈。
+- `void pop()` 删除堆栈顶部的元素。
+- `int top()` 获取堆栈顶部的元素。
+- `int getMin()` 获取堆栈中的最小元素。
+
+示例：
+```
+输入：
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+
+*输出：
+[null,null,null,null,-3,null,0,-2]
+
+解释：
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.getMin();   --> 返回 -3.
+minStack.pop();
+minStack.top();      --> 返回 0.
+minStack.getMin();   --> 返回 -2.
+```
 #### 核心思路
 
 #### 代码
+```python
+class MinStack:
+
+    def __init__(self):
+        self.stack = []
+        self.min_stack = []
+
+    def push(self, val: int) -> None:
+        self.stack.append(val)
+        if not self.min_stack or val <= self.min_stack[-1]:
+            self.min_stack.append(val)
+
+    def pop(self) -> None:
+        val = self.stack.pop()
+        if val == self.min_stack[-1]:
+            self.min_stack.pop()
+
+    def top(self) -> int:
+        return self.stack[-1]
+
+    def getMin(self) -> int:
+        return self.min_stack[-1]
+```
+### [394. 字符串解码](https://leetcode.cn/problems/decode-string/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个经过编码的字符串，返回它解码后的字符串。
 
+编码规则为: `k[encoded_string]`，表示其中方括号内部的 `encoded_string` 正好重复 `k` 次。注意 `k` 保证为正整数。
+
+你可以认为输入字符串总是有效的；输入字符串中没有额外的空格，且输入的方括号总是符合格式要求的。
+
+此外，你可以认为原始数据不包含数字，所有的数字只表示重复的次数 `k` ，例如不会出现像 `3a` 或 `2[4]` 的输入。
+
+示例：
+```
+输入：s = "3[a]2[bc]"
+输出："aaabcbc"
+```
 #### 核心思路
+```
+栈的数据结构非常适合处理嵌套的情况。
 
+1. 初始化栈：创建一个空栈，用于存储数字（重复次数）和字符串。
+    
+2. 遍历字符串：
+    - 如果当前字符是数字，则计算该数字（可能有多位）。
+    - 如果当前字符是 [，将之前计算的数字压入栈中，并重置数字。
+    - 如果当前字符是字母，则将其添加到当前正在构建的字符串中。
+    - 如果当前字符是 ]，则从栈中弹出最近的数字和字符串，并将当前构建的字符串重复该数字次，然后将结果添加到前一个部分的字符串中。
+3. 返回结果：遍历结束后，最终构建的字符串即为解码后的字符串。
+```
 #### 代码
+```python
+class Solution:
+    def decodeString(self, s: str) -> str:
+        # 初始化栈、当前数字和当前字符串
+        stack = []            # 用于存储之前的字符串和重复次数
+        current_num = 0        # 当前数字，用于表示字符串重复的次数
+        current_string = ""    # 当前构建的字符串
+
+        # 遍历给定的字符串 s 中的每个字符
+        for char in s:
+            if char.isdigit():
+                # 如果遇到数字字符，则更新当前数字
+                # 处理连续的数字字符，将它们组合成一个完整的数字
+                current_num = current_num * 10 + int(char)
+            elif char == '[':
+                # 如果遇到开括号 '['，将当前字符串和当前数字保存到栈中
+                # 并重置 current_string 和 current_num，准备处理括号内部的子字符串
+                stack.append((current_string, current_num))
+                current_string, current_num = "", 0  # 重置当前字符串和数字
+            elif char == ']':
+                # 如果遇到闭括号 ']'，从栈中弹出之前的字符串和数字
+                # 生成重复的字符串，将其与之前的字符串连接起来
+                prev_string, num = stack.pop()  # 弹出上一个字符串和对应的重复次数
+                current_string = prev_string + num * current_string  # 重复当前字符串并与之前的字符串拼接
+            else:
+                # 如果是普通的字母字符，则将其追加到当前字符串中
+                current_string += char
+
+        # 返回最终构建的解码字符串
+        return current_string
+```
 #### 题目描述
+给定一个整数数组 `temperatures` ，表示每天的温度，返回一个数组 `answer` ，其中 `answer[i]` 是指对于第 `i` 天，下一个更高温度出现在几天后。如果气温在这之后都不会升高，请在该位置用 `0` 来代替。
 
+示例：
+```
+输入：temperatures = [73,74,75,71,69,72,76,73]
+输出：[1,1,4,2,1,1,0,0]
+```
 #### 核心思路
+```
+通过单调栈（Monotonic Stack）来高效解决。具体来说，我们可以利用一个栈来存储温度的索引，这样可以方便地计算天数差。
 
+1. 初始化：
+    - 创建一个结果数组 answer，长度与 temperatures 相同，初始值为0。
+    - 创建一个空的栈 stack，用于存储温度的索引。
+
+2. 遍历温度数组：
+    - 对于每个温度 temperatures[i]：
+        - 如果栈不为空且当前温度 temperatures[i] 大于栈顶索引对应的温度 temperatures[stack[-1]]，则：
+            - 弹出栈顶索引 index。
+            - 计算天数差 i - index，并将结果存入 answer[index]。
+        - 将当前索引 i 压入栈。
+3. 返回结果： 
+    - 遍历完成后，栈中剩余的索引对应的结果已经默认为0，表示之后没有更高的温度。
+```
 #### 代码
+```python
+class Solution:
+    def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
+        n = len(temperatures)  # 获取温度列表的长度
+        answer = [0] * n  # 初始化答案列表，初始值为 0，表示没有比当前温度高的日子
+        stack = []  # 栈，用来存储尚未找到更高温度的索引
+
+        for i in range(n):
+            # 使用 while 循环检查栈顶元素对应的温度是否小于当前温度
+            # 如果是，则说明当前温度高于栈顶对应的温度，我们可以计算等待的天数
+            while stack and temperatures[i] > temperatures[stack[-1]]:
+                index = stack.pop()  # 栈顶的温度索引
+                answer[index] = i - index  # 计算等待的天数，并将其存入答案列表
+            
+            # 将当前温度的索引压入栈中，以便后续处理
+            stack.append(i)
+        
+        return answer
+```
+### [215. 数组中的第K个最大元素](https://leetcode.cn/problems/kth-largest-element-in-an-array/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定整数数组 `nums` 和整数 `k`，请返回数组中第 `k` 个最大的元素。
 
+请注意，你需要找的是数组排序后的第 `k` 个最大的元素，而不是第 `k` 个不同的元素。
+你必须设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
+
+示例：
+```
+输入：[3,2,1,5,6,4], k = 2
+输出：5
+```
 #### 核心思路
+```
+1. 维护大小为 k 的最小堆：
+    - 在遍历数组 nums 时，我们使用一个堆，且堆的大小始终保持为 k。这是关键点：堆的大小总是 k。
+    - 堆的特点是堆顶元素是堆中最小的元素。因此，堆中的元素始终是当前遍历过的元素中最大的 k 个元素，而堆顶元素将是这些元素中最小的，也就是整个数组中第 k 大的元素。
 
+2. 堆操作的流程：
+    - 每次遇到一个新的元素 num 时，我们将它加入到最小堆中。
+    - 然后检查堆的大小，如果堆的大小超过 k，我们会移除堆顶元素。因为堆顶是最小的元素，这样做的目的是确保堆中只保留最大的 k 个元素。
+
+3. 最终的结果：
+    - 当遍历完所有元素后，最小堆中包含的是数组 nums 中最大的 k 个元素，而堆顶的最小元素正好是这 k 个元素中最小的一个，也就是整个数组中的第 k 大元素。
+
+- 时间复杂度：对于每个元素插入堆的时间复杂度是 O(log⁡k)，我们有 n 个元素，因此总体的时间复杂度为 O(nlog⁡k)。
+- 空间复杂度：堆的大小始终为 k，因此空间复杂度为 O(k)。
+```
 #### 代码
+【最小堆】
+```python
+class Solution:
+    def findKthLargest(self, nums: list[int], k: int) -> int:
+        # 使用大小为 k 的最小堆
+        min_heap = []
+        
+        for num in nums:
+            heapq.heappush(min_heap, num)
+            # 如果堆的大小超过 k，弹出堆顶最小值
+            if len(min_heap) > k:
+                heapq.heappop(min_heap)
+        
+        # 堆顶即为第 k 大的元素
+        return min_heap[0]
+```
+【快速选择】
+```python
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        def quick_select(nums, k):
+            """
+            Quickselect 函数：通过递归在数组中找到第 k 大的元素。
+            通过选择一个 pivot（枢轴），将数组分成两部分：
+              - `larger`: 所有大于 pivot 的元素
+              - `smaller`: 所有小于 pivot 的元素
+            然后根据 k 判断在哪部分递归继续查找。
+            """
+            # 随机选择一个 pivot 来避免最坏情况
+            pivot = random.choice(nums)
+            
+            # 分成三部分：比 pivot 大的、比 pivot 小的和等于 pivot 的
+            larger = [num for num in nums if num > pivot]
+            smaller = [num for num in nums if num < pivot]
+            
+            # k <= len(larger) 意味着我们正在寻找的第 k 大元素在 larger 部分中。
+            if k <= len(larger):
+                return quick_select(larger, k)
+            
+            # 如果 k 大于 len(larger) + len(equal)，我们需要在 smaller 部分中递归查找
+            # 由于我们已经排除了 larger 和 equal 部分的元素
+            # 因此是在剩下的 smaller 部分寻找第 k - (len(larger) + len(equal)) 大的元素。
+            if k > len(nums) - len(smaller):
+                return quick_select(smaller, k - (len(nums) - len(smaller)))
+            
+            # 否则，pivot 就是第 k 大的元素
+            return pivot
+
+        return quick_select(nums, k)
+```
+### [347. 前 K 个高频元素](https://leetcode.cn/problems/top-k-frequent-elements/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个整数数组 `nums` 和一个整数 `k` ，请你返回其中出现频率前 `k` 高的元素。你可以按 **任意顺序** 返回答案。
 
+示例：
+```
+输入：nums = [1,1,1,2,2,3], k = 2
+输出：[1,2]
+```
 #### 核心思路
+```
 
+```
 #### 代码
+【Counter + 最小堆】时间复杂度：`O(n log k)`
+```python
+class Solution:
+    def topKFrequent(self, nums: list[int], k: int) -> list[int]:
+        # 1. 使用 Counter 统计每个数字的出现频率
+        count = Counter(nums)
+        
+        # 2. 构建一个最小堆，大小为 k
+        # heapq 可以维护一个最小堆，堆中存储的是 (频率, 数字)
+        min_heap = []
+        
+        for num, freq in count.items():
+            # 将当前元素及其频率加入堆中
+            heapq.heappush(min_heap, (freq, num))
+            # 如果堆的大小超过 k，移除频率最低的元素
+            if len(min_heap) > k:
+                heapq.heappop(min_heap)
+        
+        # 3. 从最小堆中提取出频率最高的 k 个元素（此时堆中正好有 k 个元素）
+        return [num for freq, num in min_heap]
+```
+【Counter + 排序】时间复杂度：`O(n log n)`
+```python
+class Solution:
+    def topKFrequent(self, nums: list[int], k: int) -> list[int]:
+        # 1. 使用 Counter 统计每个数字的出现频率
+        count = Counter(nums)
+        
+        # 2. 使用 most_common 方法找到频率最高的 k 个元素
+        # most_common(k) 返回频率最高的前 k 个元素
+        result = []
+        for num, freq in count.most_common(k):
+            result.append(num)
+        
+        return result
+```
 #### 题目描述
 
 #### 核心思路
