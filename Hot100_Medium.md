@@ -2990,6 +2990,126 @@ class Solution:
         
         return result
 ```
+### [55. 跳跃游戏](https://leetcode.cn/problems/jump-game/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+给你一个非负整数数组 `nums` ，你最初位于数组的 **第一个下标** 。数组中的每个元素代表你在该位置可以跳跃的最大长度。
+判断你是否能够到达最后一个下标，如果可以，返回 `true` ；否则，返回 `false` 。
+
+示例：
+```
+输入：nums = [2,3,1,1,4]
+输出：true
+解释：可以先跳 1 步，从下标 0 到达下标 1, 然后再从下标 1 跳 3 步到达最后一个下标。
+```
+#### 核心思路
+```
+1. 贪心策略：每次在当前位置，计算从该位置能够到达的最远位置，并更新一个变量 max_reachable 来记录能够到达的最远下标。
+    
+2. 遍历数组：从第一个下标开始遍历数组：
+    - 如果当前下标 i 超过了 max_reachable，这意味着无法从之前的任何位置跳到当前位置，因此直接返回 False。
+    - 否则，更新 max_reachable 为 max(max_reachable, i + nums[i])，即在当前位置 i，尝试跳跃 nums[i] 步，更新最远可达位置。
+    - 如果在遍历过程中，max_reachable 已经大于或等于最后一个下标，说明可以到达最后一个下标，返回 True。
+
+时间复杂度：该算法只需遍历数组一次，因此时间复杂度为 O(n)。这是最优的时间复杂度，因为我们至少需要查看每个元素一次以确定是否可以到达最后一个位置。
+空间复杂度：该算法只使用了常数个额外变量，因此空间复杂度为 O(1)。
+```
+#### 代码
+```python
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        max_reachable = 0
+        for i in range(len(nums)):
+            if i > max_reachable:
+                return False
+            max_reachable = max(max_reachable, i + nums[i])
+        return True
+```
+### [45. 跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+给定一个长度为 `n` 的 **0 索引**整数数组 `nums`。初始位置为 `nums[0]`。
+
+每个元素 `nums[i]` 表示从索引 `i` 向前跳转的最大长度。换句话说，如果你在 `nums[i]` 处，你可以跳转到任意 `nums[i + j]` 处：
+- `0 <= j <= nums[i]` 
+- `i + j < n`
+
+返回到达 `nums[n - 1]` 的最小跳跃次数。生成的测试用例可以到达 `nums[n - 1]`。
+
+示例：
+```
+输入：nums = [2,3,1,1,4]
+输出：2
+解释：跳到最后一个位置的最小跳跃数是 2。
+```
+#### 核心思路
+```
+1. 贪心策略：在每一步中，我们尝试跳到当前能够到达的最远位置，并在需要的时候增加跳跃次数。
+    
+2. 变量初始化：
+    - max_reach：表示从当前及之前的位置能够到达的最远下标。
+    - steps：表示当前跳跃次数下能够到达的最远位置。
+    - jumps：记录跳跃次数，初始为 1，因为至少需要一次跳跃。
+3. 遍历数组：
+    - 从索引 1 开始遍历（因为起始位置已被初始化考虑）。
+    - 如果当前索引 i 超过了 steps，这意味着需要进行一次新的跳跃才能继续前进，因此增加 jumps 并更新 steps 为 max_reach。
+    - 每次更新 max_reach 为 max(max_reach, i + nums[i])，以确保记录从当前位置能够到达的最远位置。
+4. 跳跃条件： 
+    - 通过比较 i 和 steps 来决定是否增加跳跃次数。
+    - steps 的更新保证了每次跳跃后能够尽可能远地前进。
+
+时间复杂度：该算法只需遍历数组一次，因此时间复杂度为 O(n)。
+空间复杂度：该算法只使用了常数个额外变量，因此空间复杂度为 O(1)。
+```
+#### 代码
+```python
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        if len(nums) == 1:  # 如果数组只有一个元素，不需要跳跃
+            return 0
+    
+        max_reach = nums[0]  # 当前能够达到的最远位置
+        steps = nums[0]      # 当前步数能够达到的最远位置
+        jumps = 1            # 跳跃次数
+        
+        for i in range(1, len(nums)):
+            if i > steps:  # 如果当前位置超出了当前步数能够达到的最远位置
+                jumps += 1
+                steps = max_reach  # 更新当前步数能够达到的最远位置
+                
+            max_reach = max(max_reach, i + nums[i])  # 更新当前能够达到的最远位置
+        
+        return jumps
+```
+### [763. 划分字母区间](https://leetcode.cn/problems/partition-labels/description/?envType=study-plan-v2&envId=top-100-liked)
+#### 题目描述
+给你一个字符串 `s` 。我们要把这个字符串划分为尽可能多的片段，同一字母最多出现在一个片段中。
+
+注意，划分结果需要满足：将所有划分结果按顺序连接，得到的字符串仍然是 `s` 。
+
+返回一个表示每个字符串片段的长度的列表。
+
+示例：
+```
+输入：s = "ababcbacadefegdehijhklij"
+输出：[9,7,8]
+解释：
+划分结果为 "ababcbaca"、"defegde"、"hijhklij" 。
+每个字母最多出现在一个片段中。像 "ababcbacadefegde", "hijhklij" 这样的划分是错误的，因为划分的片段数较少。
+```
+#### 核心思路
+```
+1. 记录最后出现位置：
+    - 先遍历字符串 s，记录每个字符最后一次出现的位置。这样可以知道每个字符的活动范围。
+
+2. 划分片段：
+    - 用两个变量 start 和 end 来表示当前片段的起始和结束位置。
+    - 再次遍历字符串 s：
+        - 对于每个字符 s[i]，我们更新 end 为该字符的最后出现位置和当前 end 的最大值。
+        - 如果当前索引 i 等于 end，这意味着从 start 到 end 的片段可以独立出来，因为所有在这个片段中的字符都不会在后面出现。
+3. 记录结果： 
+    - 当确定一个片段时，计算其长度 end - start + 1，并将其加入结果列表。
+    - 更新 start 为 i + 1，继续寻找下一个片段。
+```
+#### 代码
 ### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
 你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警**。
@@ -3439,25 +3559,154 @@ class Solution:
 #### 核心思路
 
 #### 代码
-
+### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个包含红色、白色和蓝色、共 `n` 个元素的数组 `nums` ，**[原地](https://baike.baidu.com/item/%E5%8E%9F%E5%9C%B0%E7%AE%97%E6%B3%95)** 对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
 
+我们使用整数 `0`、 `1` 和 `2` 分别表示红色、白色和蓝色。
+
+必须在不使用库内置的 sort 函数的情况下解决这个问题。
+
+示例：
+```
+输入：nums = [2,0,2,1,1,0]
+输出：[0,0,1,1,2,2]
+```
 #### 核心思路
+```
+1. 初始化指针：
+    - low 指针用于标记红色（0）的边界，初始为 0。
+    - mid 指针用于遍历数组，初始为 0。
+    - high 指针用于标记蓝色（2）的边界，初始为数组的最后一个索引。
 
+2. 遍历数组：
+    - 当 mid 指针小于等于 high 指针时，检查 nums[mid] 的值：
+        - 如果 nums[mid] == 0：交换 nums[low] 和 nums[mid]，然后将 low 和 mid 都加 1。
+        - 如果 nums[mid] == 1：mid 加 1。
+        - 如果 nums[mid] == 2：交换 nums[mid] 和 nums[high]，然后将 high 减 1。注意这里 mid 不变，因为交换后需要再次检查 mid 位置的值。
+```
 #### 代码
+```python
+class Solution:
+    def sortColors(self, nums: List[int]) -> None:
+        low, mid, high = 0, 0, len(nums) - 1
 
+        while mid <= high:
+            if nums[mid] == 0:
+                nums[low], nums[mid] = nums[mid], nums[low]
+                low += 1
+                mid += 1
+            elif nums[mid] == 1:
+                mid += 1
+            else:  # nums[mid] == 2
+                nums[mid], nums[high] = nums[high], nums[mid]
+                high -= 1
+```
+### [31. 下一个排列](https://leetcode.cn/problems/next-permutation/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+整数数组的一个 **排列**  就是将其所有成员以序列或线性顺序排列。
 
+- 例如，`arr = [1,2,3]` ，以下这些都可以视作 `arr` 的排列：`[1,2,3]`、`[1,3,2]`、`[3,1,2]`、`[2,3,1]` 。
+
+整数数组的 **下一个排列** 是指其整数的下一个字典序更大的排列。更正式地，如果数组的所有排列根据其字典顺序从小到大排列在一个容器中，那么数组的 **下一个排列** 就是在这个有序容器中排在它后面的那个排列。如果不存在下一个更大的排列，那么这个数组必须重排为字典序最小的排列（即，其元素按升序排列）。
+
+- 例如，`arr = [1,2,3]` 的下一个排列是 `[1,3,2]` 。
+- 类似地，`arr = [2,3,1]` 的下一个排列是 `[3,1,2]` 。
+- 而 `arr = [3,2,1]` 的下一个排列是 `[1,2,3]` ，因为 `[3,2,1]` 不存在一个字典序更大的排列。
+
+给你一个整数数组 `nums` ，找出 `nums` 的下一个排列。
+
+必须 **[原地](https://baike.baidu.com/item/%E5%8E%9F%E5%9C%B0%E7%AE%97%E6%B3%95)** 修改，只允许使用额外常数空间。
+
+示例：
+```
+输入：nums = [1,2,3]
+输出：[1,3,2]
+```
 #### 核心思路
-
+```
+1. 找到第一个升序对：
+    - 从数组的末尾开始，找到第一个 nums[i] < nums[i + 1] 的位置 i。
+    - 如果找不到这样的 i，说明整个数组是降序的，直接反转整个数组即可得到最小排列。
+2. 找到比 nums[i] 大的最小数：
+    - 从数组的末尾开始，找到第一个 nums[j] > nums[i] 的位置 j。
+    - 交换 nums[i] 和 nums[j]。
+3. 反转剩余部分： 
+    - 反转从 i + 1 到数组末尾的部分，使其变为升序。
+```
 #### 代码
+```python
+class Solution:
+    def nextPermutation(self, nums: List[int]) -> None:
+        # Step 1: Find the first decreasing element from the right
+        i = len(nums) - 2
+        while i >= 0 and nums[i] >= nums[i + 1]:
+            i -= 1
 
+        if i >= 0:  # If such an element is found
+            # Step 2: Find the element just larger than nums[i] from the right
+            j = len(nums) - 1
+            while nums[j] <= nums[i]:
+                j -= 1
+            # Step 3: Swap elements at i and j
+            nums[i], nums[j] = nums[j], nums[i]
+
+        # Step 4: Reverse the elements from i+1 to end
+        nums[i + 1:] = reversed(nums[i + 1:])
+```
+### [287. 寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个包含 `n + 1` 个整数的数组 `nums` ，其数字都在 `[1, n]` 范围内（包括 `1` 和 `n`），可知至少存在一个重复的整数。
 
+假设 `nums` 只有 **一个重复的整数** ，返回 **这个重复的数** 。
+
+你设计的解决方案必须 **不修改** 数组 `nums` 且只用常量级 `O(1)` 的额外空间。
+
+示例：
+```
+输入：nums = [1,3,4,2,2]
+输出：2
+```
 #### 核心思路
+```
+将数组视为一个链表，其中每个元素的值指向下一个节点的索引。由于存在重复的数字，因此链表中必然存在环。
 
+1. 初始化快慢指针：
+    - 使用两个指针，slow 和 fast。初始时，它们都指向数组的第一个元素。
+
+2. 寻找相遇点：
+    - 让 slow 每次移动一步，而 fast 每次移动两步。
+    - 由于存在重复的数字，fast 和 slow 最终会在环中相遇。
+
+3. 找到环的入口：
+    - 将 slow 重置到数组的起始位置，而 fast 保持在相遇点。
+    - 这时，让 slow 和 fast 每次都移动一步。
+    - 当它们再次相遇时，相遇点即为环的入口，也就是重复数字所在的位置。
+```
 #### 代码
+```python
+class Solution:
+    def findDuplicate(self, nums: List[int]) -> int:
+        # Step 1: Initialize the slow and fast pointers
+        slow = nums[0]
+        fast = nums[0]
 
+        # Step 2: Move slow pointer by 1 step and fast pointer by 2 steps
+        # until they meet inside the cycle
+        while True:
+            slow = nums[slow]
+            fast = nums[nums[fast]]
+            if slow == fast:
+                break
+
+        # Step 3: Find the entrance to the cycle
+        slow = nums[0]
+        while slow != fast:
+            slow = nums[slow]
+            fast = nums[fast]
+
+        return slow
+```
 #### 题目描述
 
 #### 核心思路
