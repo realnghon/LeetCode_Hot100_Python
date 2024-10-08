@@ -3512,53 +3512,261 @@ class Solution:
         # 返回是否能找到和为 target 的子集
         return dp[target]
 ```
+### [62. 不同路径](https://leetcode.cn/problems/unique-paths/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+一个机器人位于一个 `m x n` 网格的左上角 （起始点在下图中标记为 “Start” ）。
 
+机器人每次只能向下或者向右移动一步。机器人试图达到网格的右下角（在下图中标记为 “Finish” ）。
+
+问总共有多少条不同的路径？
+
+示例：
+![](https://pic.leetcode.cn/1697422740-adxmsI-image.png)
+```
+输入：m = 3, n = 7
+输出：28
+```
 #### 核心思路
+```
+机器人要完成整个移动，必须走 m-1 次向下和 n−1 次向右。因此，总共需要走的步数是 m+n−2 步。
+因此，问题可以看作从 m+n−2 个位置中选择 m−1 个位置向下，剩下的向右。
 
+这就是组合数问题，公式为：C(m+n−2,m−1) = (m+n−2)! / (m−1)!(n−1)!
+```
 #### 代码
-
+```
+class Solution:
+	def uniquePaths(self, m: int, n: int) -> int:
+		return math.comb(m + n - 2, m - 1)
+```
+### [64. 最小路径和](https://leetcode.cn/problems/minimum-path-sum/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定一个包含非负整数的 `_m_ x _n_` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
 
+说明：每次只能向下或者向右移动一步。
+
+示例：
+![](https://assets.leetcode.com/uploads/2020/11/05/minpath.jpg)
+```
+输入：grid = [[1,3,1],[1,5,1],[4,2,1]]
+输出：7
+解释：因为路径 1→3→1→1→1 的总和最小。
+```
 #### 核心思路
+```
+1. 定义状态：
+   - 设 dp[i][j] 为到达位置 (i, j) 的最小路径和。
 
+2. 状态转移方程：
+   - 从左上角 (0, 0) 开始，移动到 (i, j) 只能从上方 (i-1, j) 或左方 (i, j-1) 移动过来。
+   - 因此，状态转移方程为：dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
+   - 需要注意边界条件：
+     - 当 i = 0 时，只能从左边移动：dp[0][j] = dp[0][j-1] + grid[0][j]
+     - 当 j = 0 时，只能从上边移动：dp[i][0] = dp[i-1][0] + grid[i][0]
+
+3. 初始化：
+   - dp[0][0] = grid[0][0]，即起点的值。
+
+4. 计算：
+   - 通过双重循环遍历整个 grid，根据状态转移方程填充 dp 数组。
+
+5. 结果：
+   - 最终结果为 dp[m-1][n-1]，即到达右下角的最小路径和。
+```
 #### 代码
-
+```python
+class Solution:
+    def minPathSum(self, grid: List[List[int]]) -> int:
+        m = len(grid)
+        n = len(grid[0])
+        
+        # 创建一个二维数组 dp，用于存储到达每个点的最小路径和
+        dp = [[0] * n for _ in range(m)]
+        
+        dp[0][0] = grid[0][0]
+        
+        # 填充第一行（只能从左边移动）
+        for j in range(1, n):
+            dp[0][j] = dp[0][j - 1] + grid[0][j]
+        
+        # 填充第一列（只能从上面移动）
+        for i in range(1, m):
+            dp[i][0] = dp[i - 1][0] + grid[i][0]
+        
+        # 填充剩余的 dp 数组
+        for i in range(1, m):
+            for j in range(1, n):
+                # 当前点的最小路径和 = 当前点的值 + 上方和左方的最小路径和
+                dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1])
+        
+        return dp[m - 1][n - 1]
+```
+### [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你一个字符串 `s`，找到 `s` 中最长的回文子串。
 
+示例：
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
 #### 核心思路
-
+```
+回文字符串是对称的，我们可以从每个字符或者字符之间的缝隙作为中心，向两边扩展，检查最长的回文子串。
+具体地，对于每个可能的中心，向两边扩展，直到不再是回文子串为止。维护当前发现的最长回文子串。
+```
 #### 代码
+```python
+class Solution:
+    def longestPalindrome(self, s: str) -> str:
+        if len(s) < 2:
+            return s
 
+        # 定义一个函数，从中心向两边扩展，找到最长的回文子串
+        # 参数 left 和 right 分别是左右边界
+        def expandAroundCenter(s, left, right):
+            # 当左右边界在有效范围内，且 s[left] == s[right] 时，继续向外扩展
+            while left >= 0 and right < len(s) and s[left] == s[right]:
+                left -= 1  # 向左扩展
+                right += 1  # 向右扩展
+            # 返回扩展后的回文子串的实际左右边界（因为最后一次循环会多减/加一，所以要 +1 和 -1）
+            return left + 1, right - 1
+
+        # 初始化回文子串的起始和结束索引
+        start, end = 0, 0
+
+        # 遍历字符串的每一个字符，以其作为中心进行扩展
+        for i in range(len(s)):
+            # 第一种情况：以 s[i] 作为中心，检查长度为奇数的回文子串
+            l1, r1 = expandAroundCenter(s, i, i)
+            # 第二种情况：以 s[i] 和 s[i+1] 之间的空隙作为中心，检查长度为偶数的回文子串
+            l2, r2 = expandAroundCenter(s, i, i + 1)
+
+            # 如果奇数长度的回文子串比当前记录的最长回文子串更长，更新 start 和 end
+            if r1 - l1 > end - start:
+                start, end = l1, r1
+            # 如果偶数长度的回文子串比当前记录的最长回文子串更长，更新 start 和 end
+            if r2 - l2 > end - start:
+                start, end = l2, r2
+
+        # 返回最长回文子串，使用最终的 start 和 end 索引
+        return s[start:end + 1]
+```
+### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给定两个字符串 `text1` 和 `text2`，返回这两个字符串的最长 **公共子序列** 的长度。如果不存在 **公共子序列** ，返回 `0` 。
 
+一个字符串的 **子序列** 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+
+- 例如，`"ace"` 是 `"abcde"` 的子序列，但 `"aec"` 不是 `"abcde"` 的子序列。
+
+两个字符串的 **公共子序列** 是这两个字符串所共同拥有的子序列。
+
+示例：
+```
+输入：text1 = "abcde", text2 = "ace" 
+输出：3  
+解释：最长公共子序列是 "ace" ，它的长度为 3 。
+```
 #### 核心思路
+```
+1. 定义动态规划表（DP表）：
+    - 我们定义一个二维数组 dp，其中 dp[i][j] 表示字符串 text1 的前 i 个字符和字符串 text2 的前 j 个字符的最长公共子序列长度。
+    - dp[i][j] 记录了到目前为止，text1[0:i-1] 和 text2[0:j-1] 的最长公共子序列长度。
 
+2. 状态转移方程：    
+    - 如果 text1[i-1] == text2[j-1]，这说明 text1 和 text2 的当前字符相同，我们可以把这个公共字符加入最长公共子序列，因此：dp[i][j] = dp[i−1][j−1] + 1
+    - 如果 text1[i-1] != text2[j-1]，则 dp[i][j] = max⁡(dp[i−1][j],dp[i][j−1]) 这表示我们要么忽略 text1 的当前字符，要么忽略 text2 的当前字符，取两种情况中较大的子序列长度。
+
+3. 边界条件：    
+    - 当 i == 0 或 j == 0 时，dp[i][j] 都初始化为 0，因为一个空字符串与任何字符串的公共子序列长度为 0。
+
+4. 最终结果：
+    - 填充完 DP 表后，dp[m][n]（其中 m 是 text1 的长度，n 是 `text2` 的长度）就是最长公共子序列的长度。
+```
 #### 代码
+```python
+class Solution:
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        # 获取两个字符串的长度
+        m, n = len(text1), len(text2)
 
+        # 初始化 DP 表，dp[i][j] 表示 text1[0:i] 和 text2[0:j] 的最长公共子序列长度
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+        # 填充 DP 表
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if text1[i - 1] == text2[j - 1]:
+                    # 当前字符相同，公共子序列长度加1
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    # 当前字符不相同，取两个可能情况的最大值
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+        # 返回最终的最长公共子序列长度
+        return dp[m][n]
+```
+### [72. 编辑距离](https://leetcode.cn/problems/edit-distance/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
+给你两个单词 `word1` 和 `word2`， 请返回将 `word1` 转换成 `word2` 所使用的最少操作数。
+你可以对一个单词进行如下三种操作：
+- 插入一个字符
+- 删除一个字符
+- 替换一个字符
 
+示例：
+```
+输入：word1 = "horse", word2 = "ros"
+输出：3
+解释：
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+```
 #### 核心思路
+```
+1. 定义 DP 表：我们定义一个二维数组 dp，其中 dp[i][j] 表示将 word1 的前 i 个字符转换为 word2 的前 j 个字符所需的最少操作数。
+    
+2. 边界条件： 
+    - 如果 i == 0，即 word1 是空字符串，那么我们需要 j 次插入操作来将 word2 拼出来，故 dp[0][j] = j。
+    - 如果 j == 0，即 word2 是空字符串，那么我们需要 i 次删除操作来将 word1 清空，故 dp[i][0] = i。
 
+3. 状态转移方程：    
+    - 如果 word1[i-1] == word2[j-1]，表示两个字符相同，不需要任何操作：dp[i][j] = dp[i-1][j-1]。
+    - 如果 word1[i-1] != word2[j-1]，表示两个字符不同，需要执行一次操作（插入、删除、替换），我们取三种操作中最小的那个： dp[i][j] = min⁡(dp[i−1][j]+1, dp[i][j−1]+1, dp[i−1][j−1]+1)
+        - 删除操作：dp[i-1][j] + 1（从 word1 删除一个字符）
+        - 插入操作：dp[i][j-1] + 1（在 word1 插入一个字符）
+        - 替换操作：dp[i-1][j-1] + 1（将 word1 的当前字符替换成 word2 的字符）
+
+4. 最终结果：dp[m][n]，其中 m 是 word1 的长度，n 是 word2 的长度。
+```
 #### 代码
+```python
+class Solution:
+    def minDistance(self, word1: str, word2: str) -> int:
+        m, n = len(word1), len(word2)
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
 
-#### 题目描述
+        for i in range(1, m + 1):
+            dp[i][0] = i  # 从 word1[0:i] 变成空字符串，执行 i 次删除操作
+        for j in range(1, n + 1):
+            dp[0][j] = j  # 从空字符串变成 word2[0:j]，执行 j 次插入操作
 
-#### 核心思路
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if word1[i - 1] == word2[j - 1]:
+                    dp[i][j] = dp[i - 1][j - 1]
+                else:
+                    # 如果不同，取插入、删除、替换操作的最小值，并加1表示一次操作
+                    dp[i][j] = min(dp[i - 1][j] + 1,    # 删除
+                                   dp[i][j - 1] + 1,    # 插入
+                                   dp[i - 1][j - 1] + 1)  # 替换
 
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
+        # 返回最终的最少操作次数
+        return dp[m][n]
+```
 ### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/description/?envType=study-plan-v2&envId=top-100-liked)
 #### 题目描述
 给定一个包含红色、白色和蓝色、共 `n` 个元素的数组 `nums` ，**[原地](https://baike.baidu.com/item/%E5%8E%9F%E5%9C%B0%E7%AE%97%E6%B3%95)** 对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
@@ -3707,128 +3915,3 @@ class Solution:
 
         return slow
 ```
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
-
-#### 题目描述
-
-#### 核心思路
-
-#### 代码
